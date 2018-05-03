@@ -8,7 +8,7 @@ import create_pslist
 
 def threeD_plot(filename, Z_direction, x_actual, y_actual, x_size, y_size):
     """3D plot for the phase shift of the AFM data."""
-    if Z_direction = "up":
+    if Z_direction == "up":
         Z_dir = create_pslist.create_pslist(filename, x_size, y_size)[2]
     else:
         Z_dir = create_pslist.create_pslist(filename, x_size, y_size)[1]
