@@ -3,8 +3,9 @@ import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-import load_data
 import create_pslist
+import load_data
+
 
 def y_slicing(filename, Z_direction, Y, x_actual, y_actual, x_size, y_size):
     """Y_Slicing function with different input Y."""
