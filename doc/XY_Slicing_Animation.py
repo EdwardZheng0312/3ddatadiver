@@ -3,8 +3,8 @@ import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-import load_data
 import create_pslist
+import load_data
 
 
 def xy_slicing_animation(filename, Z_direction, number_slices, x_actual, y_actual, x_size, y_size):
