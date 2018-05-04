@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 import create_pslist
-import loaddata
+import load_data
 
 
 def xz_slicing_animation(filename, Z_direction, number_slices, x_actual, y_actual, x_size, y_size):
