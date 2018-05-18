@@ -3,12 +3,12 @@ import sys
 import os
 from tkinter import *
 from tkinter import ttk
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from matplotlib import animation
 import tkinter.messagebox as tkMessageBox
 import itertools
@@ -81,15 +81,21 @@ class data_cleaning(ttk.Frame):
         data = pd.read_csv(filename)
         z = data.iloc[:, 0]
 
-        z_approach = z[: len(z)//2-1]
+        z_approach = z[: len(z)//2]
         z_retractt = z[len(z)//2:]
 
         z_approach = z_approach.reset_index(drop=True)
         z_retract = z_retractt.reset_index(drop=True)
-
-        z_approach.index = np.arange(1, len(z_approach) + 1)
-        z_retract.index = np.arange(1, len(z_retract) + 1)
         return data, z, z_approach, z_retract
+
+    def matconvertor(self):
+        #mat = scipy.io.loadmat()
+        #phase = mat['PHASEtot']
+        return
+
+    def Zsnsr(self):
+
+        return
 
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -201,11 +207,11 @@ class threeD_plot(ttk.Frame):
 
     def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):
         if Z_direction == "up":
-            Z_dir = data.iloc[:,0].iloc[:len(z)//2]
-            data1 = data.iloc[:,:].iloc[:len(z)//2].drop(['Z (nm)'], axis=1)
+            Z_dir = data.iloc[:,0].iloc[-len(z) // 2:]
+            data1 = data.iloc[:,:].iloc[-len(z) // 2:].drop(['Z (nm)'], axis=1)
         else:
-            Z_dir = data.iloc[:, 0].iloc[-len(z) // 2:]
-            data1 = data.iloc[:, :].iloc[-len(z) // 2:].drop(['Z (nm)'], axis=1)
+            Z_dir = data.iloc[:, 0].iloc[:len(z) // 2]
+            data1 = data.iloc[:, :].iloc[:len(z) // 2].drop(['Z (nm)'], axis=1)
 
         retract_as_numpy = data1.as_matrix(columns=None)
         retract_as_numpy_reshape1 = retract_as_numpy.reshape(len(Z_dir), x_size, y_size)
@@ -226,7 +232,8 @@ class threeD_plot(ttk.Frame):
 
         fig = plt.figure(figsize=(9, 8))
         ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(xi, yi, zi, c=fxyz, alpha=0.2)
+        im = ax.scatter(xi, yi, zi, c=fxyz, alpha=0.2)
+        plt.colorbar(im)
         ax.set_xlim(left=init,right=x_actual)
         ax.set_ylim(top=y_actual, bottom=init)
         ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
@@ -239,30 +246,32 @@ class threeD_plot(ttk.Frame):
         canvas.show()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        fig.savefig("3D Plot.tif")
+
 
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="3D_Plot", font='Large_Font')
+        label = ttk.Label(self, text="3D Plot", font='Large_Font')
         label.pack(pady=10, padx=10)
 
-        label_1 = ttk.Label(self, text="Z_direction", font="Small_Font")
+        label_1 = ttk.Label(self, text="Z Direction", font="Small_Font")
         label_1.pack()
         txtdir = ttk.Entry(self)
         txtdir.pack()
 
-        button0 = ttk.Button(self, text="Get Z_direction",command=lambda: self.Z_direction(txtdir))
+        button0 = ttk.Button(self, text="Get Z Direction",command=lambda: self.Z_direction(txtdir))
         button0.pack()
 
-        button1 = ttk.Button(self, text="Get 3D_Plot", command=lambda: self.threeDplot(Z_direction, z, x_actual, y_actual, x_size, y_size))
+        button1 = ttk.Button(self, text="Get 3D Plot", command=lambda: self.threeDplot(Z_direction, z, x_actual, y_actual, x_size, y_size))
         button1.pack()
 
-        button2 =ttk.Button(self, text="2D_slicing", command=lambda:controller.show_frame(twoD_slicing))
+        button2 =ttk.Button(self, text="2D Slicing", command=lambda:controller.show_frame(twoD_slicing))
         button2.pack()
 
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
         button3.pack()
 
-        button4 = ttk.Button(self, text="Organizing_Dataset", command=lambda: controller.show_frame(load_data))
+        button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
         button4.pack()
 
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
@@ -282,10 +291,7 @@ class twoD_slicing(tk.Frame):
 
     def location_slices(self, txtnslices):
         global location_slices
-        if txtnslices == int(Z_dir.max()):
-            location_slices = ((int(Z_dir.max())-float(txtnslices.get()))/int(Z_dir.max()))*(int(len(z)/2))
-        else:
-            location_slices = ((int(Z_dir.max())-float(txtnslices.get()))/int(Z_dir.max()))*(int(len(z)/2))-1
+        location_slices = int(txtnslices.get())
         return location_slices
 
     def export_filename(self, txtfilename):
@@ -303,28 +309,132 @@ class twoD_slicing(tk.Frame):
             pslist.append(ps_reshape)
         return pslist
 
+    def twoDX_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        global canvas
+        global canvas1
+        a = np.linspace(init, x_actual, x_size)[location_slices]
+        b = np.linspace(init, y_actual, y_size)
+        c = Z_dir
+        X, Z, Y = np.meshgrid(a, c, b)
+
+        As = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), location_slices, :].flatten()
+
+        fig = plt.figure(figsize=(11, 11))
+        ax = fig.add_subplot(111, projection='3d')
+        im = ax.scatter(X, Y, Z, c=As, s=6)
+        plt.colorbar(im)
+        ax.set_xlim(left=init, right=x_actual)
+        ax.set_ylim(bottom=init, top=y_actual)
+        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
+        ax.set_xlabel('X(nm)', fontsize=12)
+        ax.set_ylabel('Y(nm)', fontsize=12)
+        ax.set_zlabel('Z(nm)', fontsize=12)
+        ax.set_title('2D X Slicing (X='+str(round(a,3)) + 'nm)for the Phase Shift of AFM data', fontsize=13)
+
+        canvas = FigureCanvasTkAgg(fig, self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        csvfile = export_filename2+str(".csv")
+        # Assuming res is a list of lists
+        with open(csvfile, "w") as output:
+            writer = csv.writer(output, lineterminator='\n')
+            As = As.reshape(len(Z_dir), y_size).tolist()
+            writer.writerows(list(As))
+
+        setStr = '{}_Xslices.tif'.format(export_filename2)
+        fig.savefig(setStr)
+
+        fig1 = plt.figure(figsize=(11, 9))
+        plt.subplot(111)
+        plt.imshow(As, aspect='auto')
+        plt.xlabel('Y', fontsize=12)
+        plt.ylabel('Z', fontsize=12)
+        plt.title('2D X Slicing (X='+str(round(a,3)) + 'nm)for the Phase Shift of AFM data', fontsize=13)
+        plt.colorbar()
+
+        canvas1 = FigureCanvasTkAgg(fig1, self)
+        canvas1.show()
+        canvas1.get_tk_widget().pack(side=tk.LEFT)
+
+        setStr = '{}_2d_Xslices.tif'.format(export_filename2)
+        fig1.savefig(setStr)
+
+    def twoDY_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        global canvas
+        global canvas1
+        a = np.linspace(init, x_actual, x_size)
+        b = np.linspace(init, y_actual, y_size)[location_slices]
+        c = Z_dir
+        X, Z, Y = np.meshgrid(a, c, b)
+
+        Bs = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), :, location_slices].flatten()
+
+        fig = plt.figure(figsize=(11, 11))
+        ax = fig.add_subplot(111, projection='3d')
+        im = ax.scatter(X, Y, Z, c=Bs, s=6)
+        plt.colorbar(im)
+        ax.set_xlim(left=init, right=x_actual)
+        ax.set_ylim(bottom=init, top=y_actual)
+        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
+        ax.set_xlabel('X(nm)', fontsize=12)
+        ax.set_ylabel('Y(nm)', fontsize=12)
+        ax.set_zlabel('Z(nm)', fontsize=12)
+        ax.set_title('2D Y Slicing (Y='+str(round(b,3)) + 'nm)for the Phase Shift of AFM data', fontsize=13)
+
+        canvas = FigureCanvasTkAgg(fig, self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        csvfile = export_filename2+str(".csv")
+        # Assuming res is a list of lists
+        with open(csvfile, "w") as output:
+            writer = csv.writer(output, lineterminator='\n')
+            Bs = Bs.reshape(len(Z_dir), x_size).tolist()
+            writer.writerows(Bs)
+
+        setStr = '{}_Yslices.tif'.format(export_filename2)
+        fig.savefig(setStr)
+
+        fig2 = plt.figure(figsize=(11, 9))
+        plt.subplot(111)
+        plt.imshow(Bs, aspect='auto')
+        plt.xlabel('X', fontsize=12)
+        plt.ylabel('Z', fontsize=12)
+        plt.title('2D Y Slicing (Y='+str(round(b,3)) + 'nm)for the Phase Shift of AFM data', fontsize=13)
+        plt.colorbar()
+
+        canvas1 = FigureCanvasTkAgg(fig2, self)
+        canvas1.show()
+        canvas1.get_tk_widget().pack(side=tk.LEFT)
+
+        setStr = '{}_2d_Yslices.tif'.format(export_filename2)
+        fig2.savefig(setStr)
+
     def twoDZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
-        phaseshift = (self.create_pslist(x_size, y_size))[int(location_slices)]
+        global canvas
+        phaseshift = (self.create_pslist(x_size, y_size))[(location_slices)-1]
 
         a = np.linspace(init, x_actual, x_size)
         b = np.linspace(init, y_actual, y_size)
         X, Z, Y = np.meshgrid(a, Z_dir[location_slices], b)
         l = phaseshift
 
-        fig = plt.figure(figsize=(9, 9))
+        fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(X, Y, Z, c=l, s=6)
+        im = ax.scatter(X, Y, Z, c=l, s=6)
+        plt.colorbar(im)
         ax.set_xlim(left=init, right=x_actual)
         ax.set_ylim(bottom=init, top=y_actual)
         ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
-        ax.set_xlabel('X(nm)', fontsize=15)
-        ax.set_ylabel('Y(nm)', fontsize=15)
-        ax.set_zlabel('Z(nm)', fontsize=15)
-        ax.set_title('2D Z_Slicing for the Phase Shift of AFM data', fontsize=20)
+        ax.set_xlabel('X(nm)', fontsize=12)
+        ax.set_ylabel('Y(nm)', fontsize=12)
+        ax.set_zlabel('Z(nm)', fontsize=12)
+        ax.set_title('2D Z Slicing (Z='+str(round(Z_dir[location_slices],3)) + 'nm) for the Phase Shift of AFM data', fontsize=13)
 
         canvas = FigureCanvasTkAgg(fig, self)
         canvas.show()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         csvfile = export_filename2+str(".csv")
         # Assuming res is a list of lists
@@ -332,101 +442,168 @@ class twoD_slicing(tk.Frame):
             writer = csv.writer(output, lineterminator='\n')
             writer.writerows(phaseshift)
 
+        setStr = '{}_Zslices.tif'.format(export_filename2)
+        fig.savefig(setStr)
+
+
     def twoZ_slicings(self, location_slices, x_actual, y_actual, x_size, y_size):
+        global canvas1
         phaseshift = (self.create_pslist(x_size, y_size))[int(location_slices)]
 
-        a = np.linspace(init, x_actual, x_size)
-        b = np.linspace(init, y_actual, y_size)
-        X, Y = np.meshgrid(a, b)
         l = phaseshift
 
         fig = plt.figure(figsize=(9, 9))
-        ax = fig.add_subplot(111)
-        ax.scatter(X, Y, c=l, s=6)
-        ax.set_xlim(left=init, right=x_actual)
-        ax.set_ylim(bottom=init, top=y_actual)
-        ax.set_xlabel('X(nm)', fontsize=15)
-        ax.set_ylabel('Y(nm)', fontsize=15)
-        ax.set_title('2D Z_Slicing for the Phase Shift of AFM data', fontsize=20)
+        plt.imshow(l)
+        plt.xlabel('X', fontsize=12)
+        plt.ylabel('Y', fontsize=12)
+        plt.title('2D Z Slicing (Z='+str(round(Z_dir[location_slices],3)) + 'nm) for the Phase Shift of AFM data', fontsize=13)
+        plt.colorbar()
 
-        canvas = FigureCanvasTkAgg(fig, self)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas1 = FigureCanvasTkAgg(fig, self)
+        canvas1.show()
+        canvas1.get_tk_widget().pack(side=tk.LEFT)
+
+        setStr = '{}_2d_Zslices.tif'.format(export_filename2)
+        fig.savefig(setStr)
+
+    def clear(self):
+        txtnslices.delete(0, END)
+        canvas.get_tk_widget().delete("all")
+        canvas1.get_tk_widget().delete("all")
 
     def __init__(self, parent, controller):
         global txtnslices
         global txtzdir
         global txtfilename
         ttk.Frame.__init__(self, parent)
-        label1 = ttk.Label(self, text="2D_Slicing", font='Large_Font')
-        label1.pack(pady=10, padx=10)
+        label1 = ttk.Label(self, text="2D Slicing", font='Large_Font')
+        label1.pack()
 
-        label_1 = ttk.Label(self, text="Slices_Location", font="Small_Font")
+        label_1 = ttk.Label(self, text="Slices Location", font="Small_Font")
         label_1.pack()
         txtnslices = ttk.Entry(self)
         txtnslices.pack()
 
-        label_2 = ttk.Label(self, text="Z_Direction", font="Small_Font")
+        label_2 = ttk.Label(self, text="Z Direction", font="Small_Font")
         label_2.pack()
         txtzdir = ttk.Entry(self)
         txtzdir.pack()
 
-        label_3 = ttk.Label(self, text="Export_csv_Filename", font="Small_Font")
+        label_3 = ttk.Label(self, text="Export Filename", font="Small_Font")
         label_3.pack()
         txtfilename = ttk.Entry(self)
         txtfilename.pack()
 
-        button0 = ttk.Button(self, text="Get Location_Slices & Directions", command=lambda: (self.Z_direction(txtzdir), self.location_slices(txtnslices), self.export_filename(txtfilename)))
+        button0 = ttk.Button(self, text="Get Location Slices & Directions", command=lambda: (self.Z_direction(txtzdir), self.location_slices(txtnslices), self.export_filename(txtfilename)))
         button0.pack()
 
-        button1 = ttk.Button(self, text="Get 2D X_Slicing Plot", command=lambda: self.twoDZ_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size))
+        button1 = ttk.Button(self, text="Get 2D X Slicing Plot", command=lambda: self.twoDX_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size))
         button1.pack()
 
-        button2 = ttk.Button(self, text="Get 2D Y_Slicing Plot", command=lambda: self.twoDZ_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size))
+        button2 = ttk.Button(self, text="Get 2D Y Slicing Plot", command=lambda: self.twoDY_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size))
         button2.pack()
 
-        button3 = ttk.Button(self, text="Get 2D Z_Slicing Plot", command=lambda: (self.twoDZ_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size), self.twoZ_slicings(location_slices, x_actual, y_actual, x_size, y_size)))
+        button3 = ttk.Button(self, text="Get 2D Z Slicing Plot", command=lambda: (self.twoDZ_slicings(location_slices, export_filename2, x_actual, y_actual, x_size, y_size), self.twoZ_slicings(location_slices, x_actual, y_actual, x_size, y_size)))
         button3.pack()
 
-        button4 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear_text())
+        button4 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
         button4.pack()
 
-        button5 = ttk.Button(self, text="3D_Plot", command=lambda: controller.show_frame(threeD_plot))
+        button5 = ttk.Button(self, text="3D Plot", command=lambda: controller.show_frame(threeD_plot))
         button5.pack()
 
-        button6 = ttk.Button(self, text="2D_Slicing_Animation", command=lambda: controller.show_frame(animation))
+        button6 = ttk.Button(self, text="2D Slicing Animation", command=lambda: controller.show_frame(animation))
         button6.pack()
 
-        button7 = ttk.Button(self, text="Organizing_Dataset", command=lambda: controller.show_frame(load_data))
+        button7 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
         button7.pack()
 
         button8 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
         button8.pack()
 
         label2 = ttk.Label(self, text="The reference level for the plots is set as zero at the substrate surface.", font=(None,10))
-        label2.pack(pady=10, padx=10)
-
-    def clear_text(self):
-        txtnslices.delete(0, END)
-        txtfilename.delete(0, END)
-        txtzdir.delete(0, END)
+        label2.pack()
 
 
 class animation(tk.Frame):
+    def get_animation(self):
+        global Z_direction
+        global number_slices
+        Z_direction = txtzdir.get()
+        number_slices = numslices.get()
+
+        return Z_direction,number_slices
+
+    def Z_amination(self, Z_direction, number_slices, x_actual, y_actual, x_size, y_size):
+        if Z_direction == "up":
+            Z_dir = z_retract
+        else:
+            Z_dir = z_approach
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlim(left=init, right=x_size)
+        ax.set_ylim(top=y_size, bottom=init)
+        ax.set_zlim(bottom=Z_dir.min(), top=Z_dir.max())
+        ax.set_xlabel('X(nm)', fontsize=12)
+        ax.set_ylabel('Y(nm)', fontsize=12)
+        ax.set_zlabel('Z(nm)', fontsize=12)
+        ax.set_title('XY Slicing Animation for the AFM Phase Shift', fontsize=15)
+
+        ims = []
+        for add in np.arange(number_slices):
+            a = np.linspace(init, x_actual, x_size)
+            b = np.linspace(init, y_actual, y_size)
+            c = Z_dir.iloc[add * (Z_dir.size // number_slices)]
+            X, Z, Y = np.meshgrid(a, c, b)
+
+            phaseshift = (self.create_pslist(x_size, y_size))[add]
+            l = phaseshift
+            ims.append((ax.scatter(X, Y, Z, c=l, s=6)))
+
+        im_ani = animation.ArtistAnimation(fig, ims, interval=500, blit=True)
+
+        canvas1 = FigureCanvasTkAgg(fig, self)
+        canvas1.show()
+        canvas1.get_tk_widget().pack(side=tk.LEFT)
+
+        im_ani.save('XY Slice.htm', metadata={'artist': 'Guido'})
+
 
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="2D_Slicing_Animation", font='Large_Font')
+        label = ttk.Label(self, text="2D Slicing Animation", font='Large_Font')
         label.pack(pady=10, padx=10)
 
-        button1 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
+        label1 =ttk.Label(self, text="Number of Slices", font='Large_Font')
+        label1.pack()
+        numslices = ttk.Entry(self)
+        numslices.pack()
+
+        label2 =ttk.Label(self, text="Z Direction", font='Large_Font')
+        label2.pack()
+        txtzdir = ttk.Entry(self)
+        txtzdir.pack()
+
+        label3 =ttk.Label(self, text="2D Slicing Animation", font='Large_Font')
+        label3.pack()
+        entry3 = ttk.Entry(self)
+        entry3.pack()
+
+        button1 = ttk.Button(self, text="Get Inputs", command=lambda: self.get_animation())
         button1.pack()
 
-        button2 = ttk.Button(self, text="Organizing_Dataset", command=lambda: controller.show_frame(load_data))
+        button2 = ttk.Button(self, text="Get Z Animation", command=lambda: self.Z_amination(Z_direction, number_slices, x_actual, y_actual, x_size, y_size))
         button2.pack()
 
-        button3 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(load_data))
+        button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
         button3.pack()
+
+        button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
+        button4.pack()
+
+        button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(load_data))
+        button5.pack()
 
 
 class acknowledge(tk.Frame):
