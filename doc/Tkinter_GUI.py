@@ -9,7 +9,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from matplotlib import animation
+import matplotlib.animation as ani
+
 import tkinter.messagebox as tkMessageBox
 import itertools
 import csv
@@ -28,8 +29,9 @@ except ImportError:
     py3 = 1
 
 
-Large_Font = ("Vardana", 12)
-Small_Font = (None, 4)
+Large_Font = ("Vardana", 15)
+Small_Font = ("Vardana", 11)
+Tiny_Font = ("Vardana", 8)
 init = 0
 
 
@@ -38,18 +40,16 @@ class Sea(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file='taiji.png'))
-        tk.Tk.wm_title(self, "High-resolution AFM 3D visualization client")
+        tk.Tk.wm_title(self, "High-Resolution AFM 3D Visualization Client")
+        self.state('zoomed')
 
-        s = ttk.Style()
-        s.configure('My.TFrame', background='red')
-
-        container = ttk.Frame(self, style='My.TFrame')
+        container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (data_cleaning, load_data, threeD_plot, twoD_slicing, animation, acknowledge):
+        for F in (data_cleaning, load_data, threeD_plot, twoD_slicing, animation, tutorial, acknowledge):
             frame = F (container, self)
 
             self.frames[F] = frame
@@ -62,7 +62,7 @@ class Sea(tk.Tk):
         frame.tkraise()
 
 
-class data_cleaning(ttk.Frame):
+class data_cleaning(tk.Frame):
     def get_source(self, source):
         global filename
         global data
@@ -98,32 +98,37 @@ class data_cleaning(ttk.Frame):
         return
 
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="Data Pre-processing", font='Large_Font')
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+
+        label = ttk.Label(self, text="Data Pre-processing", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
-        label_1 = ttk.Label(self, text="Input_Dataset",font="Small_Font")
+        label_1 = ttk.Label(self, text="Input Dataset",font="Small_Font", background='#ffffff')
         label_1.pack()
         source =ttk.Entry(self)
-        source.pack()
+        source.pack(pady=10, padx=10)
 
-        button0 = ttk.Button(self, text="Get_Dataset", command=lambda: self.get_source(source))
-        button0.pack()
+        button0 = ttk.Button(self, text="Get Dataset", command=lambda: self.get_source(source))
+        button0.pack(pady=10, padx=10)
 
         button1 = ttk.Button(self, text="Leverage",command=lambda: controller.self)
-        button1.pack()
+        button1.pack(pady=10, padx=10)
 
-        button2 = ttk.Button(self, text="Organizing_Dataset", command=lambda: controller.show_frame(load_data))
-        button2.pack()
+        button2 = ttk.Button(self, text="Organize Dataset", command=lambda: controller.show_frame(load_data))
+        button2.pack(pady=10, padx=10)
 
-        button3 = ttk.Button(self, text="Acknowledge", command=lambda: controller.show_frame(acknowledge))
-        button3.pack()
+        button3 = ttk.Button(self, text="Tutorial", command=lambda: controller.show_frame(tutorial))
+        button3.pack(pady=10, padx=10)
 
-        button4 = ttk.Button(self, text="Quit", command=lambda: controller.quit())
-        button4.pack()
+        button4 = ttk.Button(self, text="Acknowledge", command=lambda: controller.show_frame(acknowledge))
+        button4.pack(pady=10, padx=10)
+
+        button5 = ttk.Button(self, text="Quit", command=lambda: controller.quit())
+        button5.pack(pady=10, padx=10)
 
 
-class load_data(ttk.Frame):
+class load_data(tk.Frame):
     def get_data(self, txtxsize, txtysize, txtxactual, txtyactual):
         global x_size
         global y_size
@@ -146,50 +151,51 @@ class load_data(ttk.Frame):
         return pslist
 
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="Input Dataset Information for Visualization", font='Large_Font')
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label = ttk.Label(self, text="Input Dataset Information for Visualization", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
-        label_2 = ttk.Label(self, text="x_actual",font="Small_Font")
+        label_2 = ttk.Label(self, text="x_actual",font="Small_Font", background='#ffffff')
         label_2.pack()
         txtxactual =ttk.Entry(self)
         txtxactual.pack()
 
-        label_3 = ttk.Label(self, text="y_actual",font="Small_Font")
+        label_3 = ttk.Label(self, text="y_actual",font="Small_Font", background='#ffffff')
         label_3.pack()
         txtyactual =ttk.Entry(self)
         txtyactual.pack()
 
-        label_4 = ttk.Label(self, text="x_size",font="Small_Font")
+        label_4 = ttk.Label(self, text="x_size",font="Small_Font", background='#ffffff')
         label_4.pack()
         txtxsize =ttk.Entry(self)
         txtxsize.pack()
 
-        label_5 = ttk.Label(self, text="y_size",font="Small_Font")
+        label_5 = ttk.Label(self, text="y_size",font="Small_Font", background='#ffffff')
         label_5.pack()
         txtysize =ttk.Entry(self)
         txtysize.pack()
 
         button0 = ttk.Button(self, text="Get dataset information", command=lambda: self.get_data(txtxsize, txtysize, txtxactual, txtyactual))
-        button0.pack()
+        button0.pack(pady=10, padx=10)
 
         button1 =ttk.Button(self, text="3D_Plot", command=lambda: controller.show_frame(threeD_plot))
-        button1.pack()
+        button1.pack(pady=10, padx=10)
 
         button2 = ttk.Button(self, text="2D_Slicing", command=lambda: controller.show_frame(twoD_slicing))
-        button2.pack()
+        button2.pack(pady=10, padx=10)
 
         button3 = ttk.Button(self, text="2D_Slicing_Animation", command=lambda: controller.show_frame(animation))
-        button3.pack()
+        button3.pack(pady=10, padx=10)
 
         button4 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
-        button4.pack()
+        button4.pack(pady=10, padx=10)
 
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
-        button5.pack()
+        button5.pack(pady=10, padx=10)
 
 
-class threeD_plot(ttk.Frame):
+class threeD_plot(tk.Frame):
     def Z_direction(self, txtdir):
         global Z_direction
         Z_direction = txtdir.get()
@@ -250,32 +256,33 @@ class threeD_plot(ttk.Frame):
 
 
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="3D Plot", font='Large_Font')
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label = ttk.Label(self, text="3D Plot", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
-        label_1 = ttk.Label(self, text="Z Direction", font="Small_Font")
+        label_1 = ttk.Label(self, text="Z Direction", font="Small_Font", background='#ffffff')
         label_1.pack()
         txtdir = ttk.Entry(self)
         txtdir.pack()
 
         button0 = ttk.Button(self, text="Get Z Direction",command=lambda: self.Z_direction(txtdir))
-        button0.pack()
+        button0.pack(pady=10, padx=10)
 
         button1 = ttk.Button(self, text="Get 3D Plot", command=lambda: self.threeDplot(Z_direction, z, x_actual, y_actual, x_size, y_size))
-        button1.pack()
+        button1.pack(pady=10, padx=10)
 
-        button2 =ttk.Button(self, text="2D Slicing", command=lambda:controller.show_frame(twoD_slicing))
-        button2.pack()
+        button2 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
+        button2.pack(pady=10, padx=10)
 
-        button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
-        button3.pack()
+        button3 =ttk.Button(self, text="2D Slicing", command=lambda:controller.show_frame(twoD_slicing))
+        button3.pack(pady=10, padx=10)
 
         button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
-        button4.pack()
+        button4.pack(pady=10, padx=10)
 
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
-        button5.pack()
+        button5.pack(pady=10, padx=10)
 
 
 class twoD_slicing(tk.Frame):
@@ -317,7 +324,7 @@ class twoD_slicing(tk.Frame):
         c = Z_dir
         X, Z, Y = np.meshgrid(a, c, b)
 
-        As = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), location_slices, :].flatten()
+        As = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), location_slices, :]
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
@@ -336,11 +343,10 @@ class twoD_slicing(tk.Frame):
         canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         csvfile = export_filename2+str(".csv")
-        # Assuming res is a list of lists
+        # Assuming As is a list of lists
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
-            As = As.reshape(len(Z_dir), y_size).tolist()
-            writer.writerows(list(As))
+            writer.writerows(As)
 
         setStr = '{}_Xslices.tif'.format(export_filename2)
         fig.savefig(setStr)
@@ -368,7 +374,7 @@ class twoD_slicing(tk.Frame):
         c = Z_dir
         X, Z, Y = np.meshgrid(a, c, b)
 
-        Bs = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), :, location_slices].flatten()
+        Bs = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), :, location_slices]
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
@@ -390,7 +396,6 @@ class twoD_slicing(tk.Frame):
         # Assuming res is a list of lists
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
-            Bs = Bs.reshape(len(Z_dir), x_size).tolist()
             writer.writerows(Bs)
 
         setStr = '{}_Yslices.tif'.format(export_filename2)
@@ -475,21 +480,22 @@ class twoD_slicing(tk.Frame):
         global txtnslices
         global txtzdir
         global txtfilename
-        ttk.Frame.__init__(self, parent)
-        label1 = ttk.Label(self, text="2D Slicing", font='Large_Font')
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label1 = ttk.Label(self, text="2D Slicing", font='Large_Font', background='#ffffff')
         label1.pack()
 
-        label_1 = ttk.Label(self, text="Slices Location", font="Small_Font")
+        label_1 = ttk.Label(self, text="Slices Location", font="Small_Font", background='#ffffff')
         label_1.pack()
         txtnslices = ttk.Entry(self)
         txtnslices.pack()
 
-        label_2 = ttk.Label(self, text="Z Direction", font="Small_Font")
+        label_2 = ttk.Label(self, text="Z Direction", font="Small_Font", background='#ffffff')
         label_2.pack()
         txtzdir = ttk.Entry(self)
         txtzdir.pack()
 
-        label_3 = ttk.Label(self, text="Export Filename", font="Small_Font")
+        label_3 = ttk.Label(self, text="Export Filename", font="Small_Font", background='#ffffff')
         label_3.pack()
         txtfilename = ttk.Entry(self)
         txtfilename.pack()
@@ -531,15 +537,23 @@ class animation(tk.Frame):
         global number_slices
         Z_direction = txtzdir.get()
         number_slices = numslices.get()
+        return Z_direction, number_slices
 
-        return Z_direction,number_slices
+    def create_pslist(self, x_size, y_size):
+        """The function for reshape the input data file depends on certain shape of the input data file"""
+        pslist = []
+        for k in range(len(z)):
+            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+            ps = np.array(phaseshift)
+            ps_reshape = np.reshape(ps, (x_size, y_size))
+            pslist.append(ps_reshape)
+        return pslist
 
     def Z_amination(self, Z_direction, number_slices, x_actual, y_actual, x_size, y_size):
         if Z_direction == "up":
             Z_dir = z_retract
         else:
             Z_dir = z_approach
-
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim(left=init, right=x_size)
@@ -551,80 +565,101 @@ class animation(tk.Frame):
         ax.set_title('XY Slicing Animation for the AFM Phase Shift', fontsize=15)
 
         ims = []
-        for add in np.arange(number_slices):
+        for add in np.arange(int(number_slices)):
             a = np.linspace(init, x_actual, x_size)
             b = np.linspace(init, y_actual, y_size)
-            c = Z_dir.iloc[add * (Z_dir.size // number_slices)]
+            c = Z_dir.iloc[int(add * (len(Z_dir) / int(number_slices)))]
             X, Z, Y = np.meshgrid(a, c, b)
 
             phaseshift = (self.create_pslist(x_size, y_size))[add]
             l = phaseshift
             ims.append((ax.scatter(X, Y, Z, c=l, s=6)))
 
-        im_ani = animation.ArtistAnimation(fig, ims, interval=500, blit=True)
+        anim = ani.ArtistAnimation(fig, ims)
 
-        canvas1 = FigureCanvasTkAgg(fig, self)
-        canvas1.show()
-        canvas1.get_tk_widget().pack(side=tk.LEFT)
-
-        im_ani.save('XY Slice.htm', metadata={'artist': 'Guido'})
-
+        canvas1 = tk.Canvas(anim, width=100, height=100)
+        canvas1.pack()
 
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="2D Slicing Animation", font='Large_Font')
+        global txtzdir
+        global numslices
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label = ttk.Label(self, text="2D Slicing Animation", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
-        label1 =ttk.Label(self, text="Number of Slices", font='Large_Font')
+        label1 =ttk.Label(self, text="Number of Slices", font='Large_Font', background='#ffffff')
         label1.pack()
         numslices = ttk.Entry(self)
         numslices.pack()
 
-        label2 =ttk.Label(self, text="Z Direction", font='Large_Font')
+        label2 =ttk.Label(self, text="Z Direction", font='Large_Font', background='#ffffff')
         label2.pack()
         txtzdir = ttk.Entry(self)
         txtzdir.pack()
 
-        label3 =ttk.Label(self, text="2D Slicing Animation", font='Large_Font')
+        label3 =ttk.Label(self, text="2D Slicing Animation", font='Large_Font', background='#ffffff')
         label3.pack()
         entry3 = ttk.Entry(self)
         entry3.pack()
 
         button1 = ttk.Button(self, text="Get Inputs", command=lambda: self.get_animation())
-        button1.pack()
+        button1.pack(pady=10, padx=10)
 
         button2 = ttk.Button(self, text="Get Z Animation", command=lambda: self.Z_amination(Z_direction, number_slices, x_actual, y_actual, x_size, y_size))
-        button2.pack()
+        button2.pack(pady=10, padx=10)
 
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: controller.clear())
-        button3.pack()
+        button3.pack(pady=10, padx=10)
 
         button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
-        button4.pack()
+        button4.pack(pady=10, padx=10)
 
-        button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(load_data))
-        button5.pack()
+        button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
+        button5.pack(pady=10, padx=10)
+
+class tutorial(ttk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label1 = ttk.Label(self, text="Tutorial", font=Large_Font, background='#ffffff')
+        label1.pack()
+
+        label2 = ttk.Label(self, text="Introduction to Our Software", font=Large_Font, background='#ffffff')
+        label2.pack()
+
+        def snd1():
+            os.system("D:/New/Dropbox/UW/training/Cleanroom/EPFMNMEM2016-V004900_DTH.mp4")
+
+        var = IntVar()
+
+        rb1 = ttk.Button(self, text="Play Video", command=snd1)
+        rb1.pack(pady=10, padx=10)
+
+        button0 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
+        button0.pack()
 
 
 class acknowledge(tk.Frame):
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="Acknowledge", font='Large_Font')
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label = ttk.Label(self, text="Acknowledge", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
-        label_1 = ttk.Label(self, text="This software is supported by the Pacific Northwest National Lab and the DIRECT Program in University of Washington.", font='Small_Font')
+        label_1 = ttk.Label(self, text="This software is supported by the Pacific Northwest National Lab and the DIRECT Program in University of Washington.", background='#ffffff', font='Small_Font')
         label_1.pack()
 
         photo1 = PhotoImage(file="PNNL.png")
         photo2 = PhotoImage(file="UWDIRECT.png")
-        img1 = tk.Label(self, image=photo1)
-        img2 = tk.Label(self, image=photo2)
+        img1 = tk.Label(self, image=photo1, background='#ffffff')
+        img2 = tk.Label(self, image=photo2, background='#ffffff')
         img1.image = photo1
         img2.image = photo2
         img1.pack()
         img2.pack()
 
-        label_2= ttk.Label(self, text="The software is created by Ellen Murphy, Xueqiao Zhang, Renlong Zheng.", font='Small_Font')
+        label_2= ttk.Label(self, text="The software is created by Ellen Murphy, Xueqiao Zhang, Renlong Zheng.", font='Small_Font', background='#ffffff')
         label_2.pack(pady=40, padx=10)
 
         button1 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
