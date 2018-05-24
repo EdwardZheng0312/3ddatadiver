@@ -18,7 +18,7 @@ def correct_slope(threeD_array):
 
     driftx = np.zeros(len(threeD_array[1,:,1]))
     drifty = np.zeros(len(threeD_array[1,1,:]))
-    corrected_array = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:]))
+    corrected_array = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
     #Correct the for sample tilt along to the y-direction, then correct for sample tilt
     #along the x-direction.
     for j in range(len(threeD_array[1,:,1])):
