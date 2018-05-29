@@ -1,3 +1,3 @@
 # 3DdataDiver
 
-![](https://raw.githubusercontent.com/EdwardZheng0312/VisualanalysisAFM/blob/master/doc/deep-diver.png)
+![](https://raw.githubusercontent.com/EdwardZheng0312/VisualanalysisAFM/master/doc/deep-diver.png)
