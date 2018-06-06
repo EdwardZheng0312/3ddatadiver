@@ -16,7 +16,7 @@ import Z_direction
 
 
 @image_comparison(baseline_images=['22slicing_2d_Zslices'])
-def test_Z_slicing():
+def test_twoZ_slicing():
     z_direction, Z_dir = Z_direction.Z_direction("PHASEdata.csv","up")
     phaseshift = (create_pslist.create_pslist("PHASEdata.csv",48,48))[int(22)]
 
