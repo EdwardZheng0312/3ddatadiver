@@ -35,38 +35,40 @@ init = 0
 
 
 class Sea(tk.Tk):
+    """Control function for the windows translate """
     def __init__(self, *args, **kwargs):
-        tk.Toplevel.__init__(self, *args, **kwargs)
+        tk.Tk.__init__(self, *args, **kwargs)
 
-        self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file='taiji.png'))
-        tk.Tk.wm_title(self, "High-Resolution AFM 3D Visualization Client")
-        self.state('zoomed')
+        self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file='taiji.png'))   #Set up the iconphoto for our software
+        tk.Tk.wm_title(self, "High-Resolution AFM 3D Visualization Client")      #Set up the name of our software
+        self.state('zoomed')                                                     #Set up the inital window operation size
 
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
+        container = tk.Frame(self)                                               #Define the properties of the bracket of windows inside the GUI
+        container.pack(side="top", fill="both", expand=True)                     #Define the layout of the bracket
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        self.frames = {}
+        self.frames = {}                                                         #Define the windows in the GUI
         for F in (data_cleaning, load_data, threeD_plot, twoD_slicing, animation, tutorial, acknowledge):
-            frame = F (container, self)
+            frame = F (container, self)                                          #Call the certain window from the bracket
 
-            self.frames[F] = frame
+            self.frames[F] = frame                                               #Define each son windows in GUI
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(data_cleaning)
+        self.show_frame(data_cleaning)                                           #Call the main window of the GUI
 
-    def show_frame(self,cont):
+    def show_frame(self,cont):                                                   #Show the call window
         frame = self.frames[cont]
-        frame.tkraise()
+        frame.tkraise()                                                          #Raise the called window to the top
 
 
 class data_cleaning(tk.Frame):
-    def Curselect1(self, event):  # Objectives
+    """Data Preprocessing function to clean up the input data file and export the cleaned dataset"""
+    def Curselect1(self, event):                                                 #The mouse click event for selecting the objectives you are interested to cleanup
         global valu
-        widget = event.widget
-        select = widget.curselection()
-        valu = widget.get(select[0])
+        widget = event.widget                                                    #Define the event of the objective from the GUI
+        select = widget.curselection()                                           #Read the selection from the GUI objectives
+        valu = widget.get(select[0])                                             #Return the selection from the GUI objectives
         return valu
 
     def get_source(self, source):
@@ -75,23 +77,23 @@ class data_cleaning(tk.Frame):
         global z
         global z_approach
         global z_retract
-        filename = source.get()
-        data = self.load_data(filename)[0]
-        z = self.load_data(filename)[1]
-        z_approach = self.load_data(filename)[2]
-        z_retract = self.load_data(filename)[3]
+        filename = source.get()                                                   #Export the input data file
+        data = self.load_data(filename)[0]                                        #Export the input data from the data file
+        z = self.load_data(filename)[1]                                           #Export the z axis data
+        z_approach = self.load_data(filename)[2]                                  #Export the Z axis data for AFM cantilever goes downward the substrate surface
+        z_retract = self.load_data(filename)[3]                                   #Export the z axis data for AFM cantilever goes upward the substrate surface
         return filename, data, z, z_approach, z_retract
 
     def load_data(self, filename):
-        """The function to do the primary data clean process on the input data file."""
-        data = pd.read_csv(filename)
-        z = data.iloc[:, 0]
+        """The function to import and primary data pre cleaning process for the input data file."""
+        data = pd.read_csv(filename)                                              #Read the csv file
+        z = data.iloc[:, 0]                                                       #Define the data range in the input csv file
 
-        z_retractt = z[: len(z)//2][::-1]
-        z_approach = z[len(z)//2:][::-1]
+        z_retractt = z[: len(z)//2][::-1]                                         #Define the Z axis data for AFM cantilever goes upward the substrate surface from the csv file
+        z_approach = z[len(z)//2:][::-1]                                          #Define the Z axis data for AFM cantilever goes downward the substrate surface from the csv file
 
-        z_approach = z_approach.reset_index(drop=True)
-        z_retract = z_retractt.reset_index(drop=True)
+        z_approach = z_approach.reset_index(drop=True)                            #Define the Z axis approach data index starts from 1
+        z_retract = z_retractt.reset_index(drop=True)                             #Define the Z axis retract datat index starts from 1
         return data, z, z_approach, z_retract
 
     def matconvertor(self):
@@ -99,7 +101,7 @@ class data_cleaning(tk.Frame):
         #phase = mat['PHASEtot']
         return
 
-    def Zsnsr(self):
+    def Zsnsr_correction(self):
 
         return
 
@@ -152,31 +154,32 @@ class data_cleaning(tk.Frame):
 
 
 class load_data(tk.Frame):
+    """The function for user to input the objectives for further visualization interests based"""
     def get_data(self, txtxsize, txtysize, txtxactual, txtyactual):
         global x_size
         global y_size
         global x_actual
         global y_actual
-        x_size = int(txtxsize.get())
-        y_size = int(txtysize.get())
-        x_actual = int(txtxactual.get())
-        y_actual = int(txtyactual.get())
+        x_size = int(txtxsize.get())                                              #Export the number of data points in x axis you are interested in, based on the input csv file
+        y_size = int(txtysize.get())                                              #Export the number of data points in y axis you are interested in, based on the input csv file
+        x_actual = int(txtxactual.get())                                          #Export the actual size of x direction from the AFM measurements
+        y_actual = int(txtyactual.get())                                          #Export the actual size of y direction from the AFM measurements
         return x_size, y_size, x_actual, y_actual
 
     def clean(self):
-        txtxsize.delete(0,END)
-        txtysize.delete(0,END)
-        txtxactual.delete(0,END)
-        txtyactual.delete(0,END)
+        txtxsize.delete(0,END)                                                    #Clean up the number data in x axis from the entry
+        txtysize.delete(0,END)                                                    #Clean up the number data in y aixs from the entry
+        txtxactual.delete(0,END)                                                  #Clean up the input x actual size data from the entry
+        txtyactual.delete(0,END)                                                  #Clean up the input y actual size data from the entry
 
     def create_pslist(self, x_size, y_size):
         """The function for reshape the input data file depends on certain shape of the input data file"""
         pslist = []
-        for k in range(len(z)):
-            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
-            ps = np.array(phaseshift)
-            ps_reshape = np.reshape(ps, (x_size, y_size))
-            pslist.append(ps_reshape)
+        for k in range(len(z)):                                                   #Set up the range of Z axis you are interested in
+            phaseshift = data.iloc[k, 1:]                                         #Select the data points from zero row to the end row, from second column to the last column]
+            ps = np.array(phaseshift)                                             #Convert from the list to the numpy array
+            ps_reshape = np.reshape(ps, (x_size, y_size))                         #Reshape the data into the user defined array
+            pslist.append(ps_reshape)                                             #Export all the reshaped data points for each z value into one list
         return pslist
 
     def __init__(self, parent, controller):
@@ -229,7 +232,8 @@ class load_data(tk.Frame):
 
 
 class threeD_plot(tk.Frame):
-    def Curselect2(self, event):  # Z_direction
+    """The function for the 3D plot"""
+    def Curselect2(self, event):                                                    #Export the Z_direction information for the AFM cantilever motion from the GUI
         global Z_direction
         widget = event.widget
         select = widget.curselection()
@@ -240,59 +244,57 @@ class threeD_plot(tk.Frame):
         """The function for reshape the input data file depends on certain shape of the input data file"""
         pslist = []
         for k in range(len(z)):
-            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+            phaseshift = data.iloc[k, 1:]
             ps = np.array(phaseshift)
             ps_reshape = np.reshape(ps, (x_size, y_size))
             pslist.append(ps_reshape)
         return pslist
 
-    def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):
+    def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):       #3D plot function
         global canvas
-        if Z_direction == "Up":
+        if Z_direction == "Up":                                                     #If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = data.iloc[:,0].iloc[:len(z) // 2][::-1].reset_index(drop=True)
             data1 = data.iloc[:,:].iloc[:len(z) // 2].drop(['Z (nm)'], axis=1)[::-1].reset_index(drop=True)
-        else:
+        else:                                                                       #If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = data.iloc[:,0].iloc[len(z) // 2:].reset_index(drop=True)
             data1=data.iloc[:,:].iloc[len(z) // 2:].drop(['Z (nm)'], axis=1).reset_index(drop=True)
 
-        retract_as_numpy = data1.as_matrix(columns=None)
-        retract_as_numpy_reshape1 = retract_as_numpy.reshape(len(Z_dir), x_size, y_size)
-        retract_as_numpy_reshape2 = retract_as_numpy_reshape1.flatten('F')
+        retract_as_numpy = data1.as_matrix(columns=None)                            #Convert the data to the maxtrix
+        retract_as_numpy_reshape1 = retract_as_numpy.reshape(len(Z_dir), x_size, y_size)    #Reshape the data
+        retract_as_numpy_reshape2 = retract_as_numpy_reshape1.flatten('F')          #Convert the data points into one list with the same sequencec
 
-        # Code for the plotting
-        x = np.linspace(init, x_actual, x_size)
-        y = np.linspace(init, y_actual, y_size)
-        z = np.linspace(init, Z_dir.max(), len(Z_dir))
+        x = np.linspace(init, x_actual, x_size)                                     #Define the plotting valuable x
+        y = np.linspace(init, y_actual, y_size)                                     #Define the plotting valuable y
+        z = np.linspace(init, Z_dir.max(), len(Z_dir))                              #Define the plotting valuable z
 
-        # This creates a "flat" list representation of a 3Dspace
         points = []
-        for element in itertools.product(x, y, z):
+        for element in itertools.product(x, y, z):                                  #Creates a "flat" list representation of a 3D space
             points.append(element)
 
-        fxyz = list(retract_as_numpy_reshape2)
-        xi, yi, zi = zip(*points)
+        fxyz = list(retract_as_numpy_reshape2)                                      #Convert the flatten data points list into another list
+        xi, yi, zi = zip(*points)                                                   #Zipped the flatten data points into the represented 3D space one by one in the same order as the flatten data points list
 
-        fig = plt.figure(figsize=(11, 9))
-        ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(xi, yi, zi, c=fxyz, alpha=0.2)
-        plt.colorbar(im)
-        ax.set_xlim(left=init,right=x_actual)
-        ax.set_ylim(top=y_actual, bottom=init)
-        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
-        ax.set_xlabel('X(nm)', fontsize=15)
-        ax.set_ylabel('Y(nm)', fontsize=15)
-        ax.set_zlabel('Z(nm)', fontsize=15)
-        ax.set_title('3D Plot for ' +str(valu)+ ' of the AFM data', fontsize=20)
+        fig = plt.figure(figsize=(11, 9))                                           #Define the figure to make a plot
+        ax = fig.add_subplot(111, projection='3d')                                  #Define the 3d plot
+        im = ax.scatter(xi, yi, zi, c=fxyz, alpha=0.2)                              #Define the scatter plot
+        plt.colorbar(im)                                                            #Define the colorbar in the scatter plot
+        ax.set_xlim(left=init,right=x_actual)                                       #Define the X limit for the plot
+        ax.set_ylim(top=y_actual, bottom=init)                                      #Define the Y limit for the plot
+        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())                            #Define the Z limit for the plot
+        ax.set_xlabel('X(nm)', fontsize=15)                                         #Define the X label for the plot
+        ax.set_ylabel('Y(nm)', fontsize=15)                                         #Define the Y label for the plot
+        ax.set_zlabel('Z(nm)', fontsize=15)                                         #Define the Z label for the plot
+        ax.set_title('3D Plot for ' +str(valu)+ ' of the AFM data', fontsize=20)    #Define the title for the plot
 
-        canvas = FigureCanvasTkAgg(fig, self)
+        canvas = FigureCanvasTkAgg(fig, self)                                       #Define the display figure in the window
         canvas.show()
-        canvas.get_tk_widget().pack(side=tk.TOP)
+        canvas.get_tk_widget().pack(side=tk.TOP)                                    #Define the display region in GUI
 
-        fig.savefig("3D Plot.tif")
+        fig.savefig("3D Plot.tif")                                                  #Save the export figure as tif file
 
     def clear(self):
-        txtzdir.delete(0,END)
-        canvas.get_tk_widget().destroy()
+        txtzdir.delete(0,END)                                                       #Clean up the input for the Z direction
+        canvas.get_tk_widget().destroy()                                            #Clean up the export the figure in window
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -328,16 +330,17 @@ class threeD_plot(tk.Frame):
 
 
 class twoD_slicing(tk.Frame):
-    def location_slices(self, txtnslices):
+    """The functions for different scopes of 2D slicings"""
+    def location_slices(self, txtnslices):                                            #Define the location of the slice you are interested
         global location_slices
-        location_slices = int(txtnslices.get())
-        if location_slices in range(1, len(Z_dir)+1):
+        location_slices = int(txtnslices.get())                                       #Export the locations of slice from the GUI
+        if location_slices in range(1, len(Z_dir)+1):                                 #Testing for the input whether or not beyond the input data file
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range.")
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 1 to "+str(len(Z_dir))+".")               #If the input the beyond the range, pop-up the error message
         return location_slices
 
-    def export_filename(self, txtfilename):
+    def export_filename(self, txtfilename):                                           
         global export_filename2
         export_filename2 = txtfilename.get()
         return export_filename2
@@ -615,27 +618,75 @@ class twoD_slicing(tk.Frame):
         label2.pack()
 
 
+Z_direction = "Up"
+z = np.linspace(0,499)
+data = pd.read_csv('q')
+x_size = 48
+y_size = 48
+x_actual = 2
+y_actual = 2
+Z_dir = data.iloc[:,0].iloc[:len(z) // 2][::-1].reset_index(drop=True)
+valu = "Phase Shift"
+DatCounter = 9000
+def Curselect4(event1):  # Z_direction
+    global Z_direction
+    global DatCounter
+    widget = event1.widget
+    select = widget.curselection()
+    Z_direction = widget.get(select[0])
+    DatCounter = 9000
+
+def Judge_Z_direction(Z_direction):
+    global Z_dir
+    if Z_direction == "Up":
+        Z_dir = z_retract
+    else:
+        Z_dir = z_approach
+
+fig44 = plt.Figure(figsize=(14, 11))
+ax = fig44.add_subplot(111, projection='3d')
+def animate(h):
+    pslist = []
+    if Z_direction == "Up":
+        for k in range(len(z) // 2 - 1, -1, -1):
+            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+            ps = np.array(phaseshift)
+            ps_reshape = np.reshape(ps, (x_size, y_size))
+            pslist.append(ps_reshape)
+    else:
+        for k in range(len(z) - 1, len(z) // 2 - 1, -1):
+            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+            ps = np.array(phaseshift)
+            ps_reshape = np.reshape(ps, (x_size, y_size))
+            pslist.append(ps_reshape)
+
+    ims = []
+    a = np.linspace(init, x_actual, x_size)
+    b = np.linspace(init, y_actual, y_size)
+    c = Z_dir.iloc[int(h)]
+    X, Z, Y = np.meshgrid(a, c, b)
+
+    phaseshift = pslist[int(h)]
+    l = phaseshift
+
+    mm = ax.scatter(X, Y, Z, c=l, vmax=np.array(pslist).max(), vmin=np.array(pslist).min())
+    ims.append(mm)
+
+    ax.set_xlim(left=init, right=x_actual)
+    ax.set_ylim(bottom=init, top=y_actual)
+    ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
+    ax.set_xlabel('X(nm)', fontsize=12)
+    ax.set_ylabel('Y(nm)', fontsize=12)
+    ax.set_zlabel('Z(nm)', fontsize=12)
+    fig44.suptitle('XY Slicing Animation (Z=' + str(round(c, 4)) + 'nm) for the ' + str(valu) + ' of AFM data',fontsize=23)
+
+
 class animation(tk.Frame):
     global canvas4
     global event1
     def numslice(self, numslices):
         numslice = int(numslices.get())
         return numslice
-
-    def Curselect4(self, event1):  # Z_direction
-        global Z_direction
-        widget = event1.widget
-        select = widget.curselection()
-        Z_direction = widget.get(select[0])
-        return Z_direction
-
-    def Judge_Z_direction(self, Z_direction):
-        global Z_dir
-        if Z_direction == "Up":
-            Z_dir = z_retract
-        else:
-            Z_dir = z_approach
-        return Z_dir
 
     def Curselect5(self, event):  # Slicing Directions
         global Dir
@@ -672,7 +723,7 @@ class animation(tk.Frame):
         listbox.pack()
         listbox.insert(1, "Up")
         listbox.insert(2, "Down")
-        listbox.bind('<<ListboxSelect>>', self.Curselect4)
+        listbox.bind('<<ListboxSelect>>', Curselect4)
 
         label3 = ttk.Label(self, text="Select Animation Direction", font='Large_Font', background='#ffffff')
         label3.pack()
@@ -691,10 +742,10 @@ class animation(tk.Frame):
         txtfilename2 = ttk.Entry(self)
         txtfilename2.pack()
 
-        button1 = ttk.Button(self, text="Get Inputs", command=lambda: (self.numslice(numslices), self.Judge_Z_direction(Z_direction)))
+        button1 = ttk.Button(self, text="Get Inputs", command=lambda: (self.numslice(numslices), Judge_Z_direction(Z_direction)))
         button1.pack(pady=10, padx=10)
 
-        button2 = ttk.Button(self, text="Get Z Animation", command=lambda: self.animate())
+        button2 = ttk.Button(self, text="Get Z Animation", command=lambda: animate(np.arange(1,5)))
         button2.pack(pady=10, padx=10)
 
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
@@ -706,65 +757,8 @@ class animation(tk.Frame):
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
         button5.pack(pady=10, padx=10)
 
-    global ax
-    global fig
-
-    fig = plt.Figure(figsize=(14,11))
-    ax = fig.add_subplot(111, projection='3d')
-
-    def animate(i):
-        global cbar4
-        global pslist
-
-        pslist = []
-        if Z_direction == "Up":
-            for k in range(len(z) // 2 - 1, -1, -1):
-                phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
-                ps = np.array(phaseshift)
-                ps_reshape = np.reshape(ps, (x_size, y_size))
-                pslist.append(ps_reshape)
-        else:
-            for k in range(len(z) - 1, len(z) // 2 - 1, -1):
-                phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
-                ps = np.array(phaseshift)
-                ps_reshape = np.reshape(ps, (x_size, y_size))
-                pslist.append(ps_reshape)
-
-        a = np.linspace(init, x_actual, x_size)
-        b = np.linspace(init, y_actual, y_size)
-
-        ims = []
-        c = Z_dir[250]
-        X, Z, Y = np.meshgrid(a, c, b)
-
-        phaseshift = pslist[250]
-        l = phaseshift
-
-        mm = ax.scatter(X, Y, Z, c=l, vmax=np.array(pslist).max(), vmin=np.array(pslist).min())
-        ims.append(mm)
-
-        ax.set_xlim(left=init, right=x_actual)
-        ax.set_ylim(bottom=init, top=y_actual)
-        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
-        ax.set_xlabel('X(nm)', fontsize=12)
-        ax.set_ylabel('Y(nm)', fontsize=12)
-        ax.set_zlabel('Z(nm)', fontsize=12)
-        fig.suptitle('XY Slicing Animation (Z=' + str(round(c, 4)) + 'nm) for the ' + str(valu) + ' of AFM data',fontsize=20)
-
-        cbar4 = fig.colorbar(mm)
-        cbar4.set_label(str(valu))
-
-        export_filename3 = txtfilename2.get()
-        setStr = '{}_Z_Slicing_Animation_.tif'.format(export_filename3)
-        fig.savefig(setStr)
-        return ims
-
-    root = tk.Toplevel()
-
-    canvas4 = FigureCanvasTkAgg(fig, master=root)
-    canvas4.get_tk_widget().pack()
-
-    ani = ani.FuncAnimation(fig, animate, np.arange(1, 5), interval=100)
+        canvas4 = FigureCanvasTkAgg(fig44, self)
+        canvas4.get_tk_widget().pack()
 
 
 class tutorial(ttk.Frame):
@@ -814,4 +808,5 @@ class acknowledge(tk.Frame):
 
 
 app = Sea()
+an = ani.FuncAnimation(fig44, animate, interval=100)
 app.mainloop()
