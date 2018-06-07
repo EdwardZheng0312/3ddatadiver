@@ -340,12 +340,12 @@ class twoD_slicing(tk.Frame):
             tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 1 to "+str(len(Z_dir))+".")               #If the input the beyond the range, pop-up the error message
         return location_slices
 
-    def export_filename(self, txtfilename):                                           
+    def export_filename(self, txtfilename):                                           #Define the export filename
         global export_filename2
-        export_filename2 = txtfilename.get()
+        export_filename2 = txtfilename.get()                                          #Export the name of export file
         return export_filename2
 
-    def Curselect3(self, event):  # Z_direction
+    def Curselect3(self, event):
         global Z_direction
         global Z_dir
         widget = event.widget
@@ -361,13 +361,13 @@ class twoD_slicing(tk.Frame):
         pslist = []
         if Z_direction == "Up":
             for k in range(len(z)//2-1, -1, -1):
-                phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+                phaseshift = data.iloc[k, 1:]
                 ps = np.array(phaseshift)
                 ps_reshape = np.reshape(ps, (x_size, y_size))
                 pslist.append(ps_reshape)
         else:
             for k in range(len(z)-1, len(z)//2-1, -1):
-                phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
+                phaseshift = data.iloc[k, 1:]
                 ps = np.array(phaseshift)
                 ps_reshape = np.reshape(ps, (x_size, y_size))
                 pslist.append(ps_reshape)
@@ -376,18 +376,18 @@ class twoD_slicing(tk.Frame):
     def twoDX_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
         global canvas1
         global canvas2
-        a = np.linspace(init, x_actual, x_size)[location_slices]
-        b = np.linspace(init, y_actual, y_size)
-        c = Z_dir
-        X, Z, Y = np.meshgrid(a, c, b)
+        a = np.linspace(init, x_actual, x_size)[location_slices]                     #Define the certain x slice in the x space
+        b = np.linspace(init, y_actual, y_size)                                      #Define the y space
+        c = Z_dir                                                                    #Define the z space
+        X, Z, Y = np.meshgrid(a, c, b)                                               #Create the meshgrid for the 3d space
 
-        As = np.array(self.create_pslist(x_size, y_size))[:, location_slices, :]
+        As = np.array(self.create_pslist(x_size, y_size))[:, location_slices, :]     #Select the phaseshift data points in the certain slice plane
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())   #Define the fixed colorbar range based the overall phaseshift values from the input data file
         cbar = plt.colorbar(im)
-        cbar.set_label(str(valu))
+        cbar.set_label(str(valu))                                                    #Label the colorbar
         ax.set_xlim(left=init, right=x_actual)
         ax.set_ylim(bottom=init, top=y_actual)
         ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
@@ -400,7 +400,7 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        csvfile = export_filename2+str(".csv")
+        csvfile = export_filename2+str(".csv")                                      #Export the 
         # Assuming As is a list of lists
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
@@ -643,9 +643,19 @@ def Judge_Z_direction(Z_direction):
     else:
         Z_dir = z_approach
 
+update_animation = False
+
 fig44 = plt.Figure(figsize=(14, 11))
 ax = fig44.add_subplot(111, projection='3d')
 def animate(h):
+    global update_animation
+
+    if update_animation:
+        print('animation changes')
+        update_animation=False
+    else:
+        pass
+
     pslist = []
     if Z_direction == "Up":
         for k in range(len(z) // 2 - 1, -1, -1):
@@ -680,13 +690,13 @@ def animate(h):
     ax.set_zlabel('Z(nm)', fontsize=12)
     fig44.suptitle('XY Slicing Animation (Z=' + str(round(c, 4)) + 'nm) for the ' + str(valu) + ' of AFM data',fontsize=23)
 
-
 class animation(tk.Frame):
     global canvas4
     global event1
-    def numslice(self, numslices):
-        numslice = int(numslices.get())
-        return numslice
+    global update_animation
+    def slice(self, numslices):
+        slice = int(numslices.get())
+        return slice
 
     def Curselect5(self, event):  # Slicing Directions
         global Dir
@@ -694,6 +704,10 @@ class animation(tk.Frame):
         select = widget.curselection()
         Dir = widget.get(select[0])
         return Dir
+
+    def callback(self):
+        global update_animation
+        update_animation = True
 
     def clear(self):
         numslices.delete(0, END)
@@ -751,7 +765,7 @@ class animation(tk.Frame):
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
         button3.pack(pady=10, padx=10)
 
-        button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
+        button4 = ttk.Button(self, text="Organizing Dataset", command=self.callback)
         button4.pack(pady=10, padx=10)
 
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
