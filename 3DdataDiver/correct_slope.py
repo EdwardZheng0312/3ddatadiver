@@ -14,7 +14,7 @@ def correct_slope(threeD_array):
     #Populate zero arrays with max z values at all x,y positions.
     for j in range(len(threeD_array[1,:,1])):
         for i in range(len(threeD_array[1,1,:])):
-            array_max[j,i] = np.max(threeD_array[:,i,j])
+            array_max[j,i] = np.min(threeD_array[:,i,j])
     #Find the difference between the max and mean values in the z-direction for
     #each x,y point. Populate new matrix with corrected values.
 
