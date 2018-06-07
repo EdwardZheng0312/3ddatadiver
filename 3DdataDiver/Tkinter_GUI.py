@@ -1,18 +1,15 @@
-import tkinter as tk
-import sys
-import os
-from tkinter import *
-from tkinter import ttk
-import numpy as np
-import pandas as pd
+import h5py
+import itertools
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
+import numpy as np
+import os
+import pandas as pd
+import sys
+import tkinter as tk
 import tkinter.messagebox as tkMessageBox
-import itertools
-import csv
 
 
 try:
@@ -64,7 +61,8 @@ class Sea(tk.Tk):
 
 class data_cleaning(tk.Frame):
     """Data Preprocessing function to clean up the input data file and export the cleaned dataset"""
-    def Curselect1(self, event):                                                 #The mouse click event for selecting the objectives you are interested to cleanup
+    def Curselect1(self, event):
+        """The mouse click event for selecting the objectives you are interested to cleanup"""
         global valu
         widget = event.widget                                                    #Define the event of the objective from the GUI
         select = widget.curselection()                                           #Read the selection from the GUI objectives
@@ -72,6 +70,7 @@ class data_cleaning(tk.Frame):
         return valu
 
     def get_source(self, source):
+        """The function to return the inputs to the GUI functions"""
         global filename
         global data
         global z
@@ -156,6 +155,7 @@ class data_cleaning(tk.Frame):
 class load_data(tk.Frame):
     """The function for user to input the objectives for further visualization interests based"""
     def get_data(self, txtxsize, txtysize, txtxactual, txtyactual):
+        """The function to return the inputs to the GUI functions"""
         global x_size
         global y_size
         global x_actual
@@ -182,7 +182,7 @@ class load_data(tk.Frame):
             pslist.append(ps_reshape)                                             #Export all the reshaped data points for each z value into one list
         return pslist
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller):                                       #Define all the controller in the load_data window
         global txtxsize
         global txtysize
         global txtxactual
@@ -233,7 +233,8 @@ class load_data(tk.Frame):
 
 class threeD_plot(tk.Frame):
     """The function for the 3D plot"""
-    def Curselect2(self, event):                                                    #Export the Z_direction information for the AFM cantilever motion from the GUI
+    def Curselect2(self, event):
+        """Export the Z_direction information for the AFM cantilever motion from the GUI"""
         global Z_direction
         widget = event.widget
         select = widget.curselection()
@@ -250,7 +251,8 @@ class threeD_plot(tk.Frame):
             pslist.append(ps_reshape)
         return pslist
 
-    def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):       #3D plot function
+    def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):
+        """3D plot function"""
         global canvas
         if Z_direction == "Up":                                                     #If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = data.iloc[:,0].iloc[:len(z) // 2][::-1].reset_index(drop=True)
@@ -331,7 +333,8 @@ class threeD_plot(tk.Frame):
 
 class twoD_slicing(tk.Frame):
     """The functions for different scopes of 2D slicings"""
-    def location_slices(self, txtnslices):                                            #Define the location of the slice you are interested
+    def location_slices(self, txtnslices):
+        """Define the location of the slice you are interested"""
         global location_slices
         location_slices = int(txtnslices.get())                                       #Export the locations of slice from the GUI
         if location_slices in range(1, len(Z_dir)+1):                                 #Testing for the input whether or not beyond the input data file
@@ -340,9 +343,10 @@ class twoD_slicing(tk.Frame):
             tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 1 to "+str(len(Z_dir))+".")               #If the input the beyond the range, pop-up the error message
         return location_slices
 
-    def export_filename(self, txtfilename):                                           #Define the export filename
+    def export_filename(self, txtfilename):
+        """Export the user input export filename into the GUI"""
         global export_filename2
-        export_filename2 = txtfilename.get()                                          #Export the name of export file
+        export_filename2 = txtfilename.get()                                          #Return the name of export file
         return export_filename2
 
     def Curselect3(self, event):
@@ -358,6 +362,7 @@ class twoD_slicing(tk.Frame):
         return Z_dir
 
     def create_pslist(self, x_size, y_size):
+        """The function for reshape the input data file depends on certain shape of the input data file, and also judge the AFM cantilever movement direction"""
         pslist = []
         if Z_direction == "Up":
             for k in range(len(z)//2-1, -1, -1):
@@ -374,6 +379,7 @@ class twoD_slicing(tk.Frame):
         return pslist
 
     def twoDX_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        """Plotting function for the X direction slicing"""
         global canvas1
         global canvas2
         a = np.linspace(init, x_actual, x_size)[location_slices]                     #Define the certain x slice in the x space
@@ -396,37 +402,35 @@ class twoD_slicing(tk.Frame):
         ax.set_zlabel('Z(nm)', fontsize=12)
         ax.set_title('3D X Slicing (X='+str(round(a,4)) + 'nm) for the '+str(valu)+' of AFM data', fontsize=13)
 
-        canvas1 = FigureCanvasTkAgg(fig, self)
+        canvas1 = FigureCanvasTkAgg(fig, self)                                       #Plot the 3D figure of 2D slicing
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        csvfile = export_filename2+str(".csv")                                      #Export the 
-        # Assuming As is a list of lists
-        with open(csvfile, "w") as output:
-            writer = csv.writer(output, lineterminator='\n')
-            writer.writerows(As)
+        h5file = export_filename2+str(".h5")                                         #Define the final name of the h5 file
 
-        setStr = '{}_Xslices.tif'.format(export_filename2)
-        fig.savefig(setStr)
+        # Assuming As is a list of lists
+        h = h5py.File(h5file, 'w')                                                   #Create the empty h5 file
+        h.create_dataset("data", data=As)                                            #Insert the data into the empty file
 
         fig1 = plt.figure(figsize=(11, 9))
         plt.subplot(111)
         plt.imshow(As, aspect='auto', origin="lower", vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
-        plt.axis([init, y_size-1, init, len(Z_dir)-1])
+        plt.axis([init, y_size-1, init, len(Z_dir)-1])                               #Adjust the axis range for the 2D slicing
         plt.xlabel('Y', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D X Slicing (X='+str(round(a,4)) + 'nm) for the '+str(valu)+' of AFM data', fontsize=13)
         cbar = plt.colorbar()
         cbar.set_label(str(valu))
 
-        canvas2 = FigureCanvasTkAgg(fig1, self)
+        canvas2 = FigureCanvasTkAgg(fig1, self)                                     #Plot the 2D figure of 2D slicing
         canvas2.show()
         canvas2.get_tk_widget().pack(side=tk.LEFT)
 
-        setStr = '{}_2d_Xslices.tif'.format(export_filename2)
+        setStr = '{}_2d_Xslices.tif'.format(export_filename2)                       #Define the export image name
         fig1.savefig(setStr)
 
     def twoDY_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        """Plotting function for the Y direction slicing"""
         global canvas1
         global canvas2
         a = np.linspace(init, x_actual, x_size)
@@ -453,11 +457,11 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        csvfile = export_filename2+str(".csv")
-        # Assuming res is a list of lists
-        with open(csvfile, "w") as output:
-            writer = csv.writer(output, lineterminator='\n')
-            writer.writerows(Bs)
+        h5file = export_filename2+str(".h5")
+
+        # Assuming Bs is a list of lists
+        h = h5py.File(h5file, 'w')
+        h.create_dataset("data", data=Bs)
 
         setStr = '{}_Yslices.tif'.format(export_filename2)
         fig.savefig(setStr)
@@ -480,6 +484,7 @@ class twoD_slicing(tk.Frame):
         fig2.savefig(setStr)
 
     def twoDZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        """3D Plotting function for Z direction slicing"""
         global canvas1
         phaseshift = (self.create_pslist(x_size, y_size))[location_slices-1]
 
@@ -505,17 +510,19 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        csvfile = export_filename2+str(".csv")
-        # Assuming res is a list of lists
-        with open(csvfile, "w") as output:
-            writer = csv.writer(output, lineterminator='\n')
-            writer.writerows(phaseshift)
+        h5file = export_filename2+str(".h5")
+
+        # Assuming phaseshift is a list of lists
+        h = h5py.File(h5file, 'w')
+        h.create_dataset("data", data=phaseshift)
+
 
         setStr = '{}_Zslices.tif'.format(export_filename2)
         fig.savefig(setStr)
 
 
     def twoZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
+        """2D Plotting function for Z direction slicing"""
         global canvas2
         phaseshift = (self.create_pslist(x_size, y_size))[location_slices-1]
 
@@ -552,6 +559,7 @@ class twoD_slicing(tk.Frame):
         canvas3.show()
 
     def clear(self):
+        """Clear up the inputs"""
         txtnslices.delete(0, END)
         txtfilename.delete(0,END)
         canvas1.get_tk_widget().destroy()
@@ -618,23 +626,12 @@ class twoD_slicing(tk.Frame):
         label2.pack()
 
 
-Z_direction = "Up"
-z = np.linspace(0,499)
-data = pd.read_csv('q')
-x_size = 48
-y_size = 48
-x_actual = 2
-y_actual = 2
-Z_dir = data.iloc[:,0].iloc[:len(z) // 2][::-1].reset_index(drop=True)
-valu = "Phase Shift"
-DatCounter = 9000
 def Curselect4(event1):  # Z_direction
     global Z_direction
     global DatCounter
     widget = event1.widget
     select = widget.curselection()
     Z_direction = widget.get(select[0])
-    DatCounter = 9000
 
 def Judge_Z_direction(Z_direction):
     global Z_dir
@@ -642,53 +639,6 @@ def Judge_Z_direction(Z_direction):
         Z_dir = z_retract
     else:
         Z_dir = z_approach
-
-update_animation = False
-
-fig44 = plt.Figure(figsize=(14, 11))
-ax = fig44.add_subplot(111, projection='3d')
-def animate(h):
-    global update_animation
-
-    if update_animation:
-        print('animation changes')
-        update_animation=False
-    else:
-        pass
-
-    pslist = []
-    if Z_direction == "Up":
-        for k in range(len(z) // 2 - 1, -1, -1):
-            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
-            ps = np.array(phaseshift)
-            ps_reshape = np.reshape(ps, (x_size, y_size))
-            pslist.append(ps_reshape)
-    else:
-        for k in range(len(z) - 1, len(z) // 2 - 1, -1):
-            phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
-            ps = np.array(phaseshift)
-            ps_reshape = np.reshape(ps, (x_size, y_size))
-            pslist.append(ps_reshape)
-
-    ims = []
-    a = np.linspace(init, x_actual, x_size)
-    b = np.linspace(init, y_actual, y_size)
-    c = Z_dir.iloc[int(h)]
-    X, Z, Y = np.meshgrid(a, c, b)
-
-    phaseshift = pslist[int(h)]
-    l = phaseshift
-
-    mm = ax.scatter(X, Y, Z, c=l, vmax=np.array(pslist).max(), vmin=np.array(pslist).min())
-    ims.append(mm)
-
-    ax.set_xlim(left=init, right=x_actual)
-    ax.set_ylim(bottom=init, top=y_actual)
-    ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
-    ax.set_xlabel('X(nm)', fontsize=12)
-    ax.set_ylabel('Y(nm)', fontsize=12)
-    ax.set_zlabel('Z(nm)', fontsize=12)
-    fig44.suptitle('XY Slicing Animation (Z=' + str(round(c, 4)) + 'nm) for the ' + str(valu) + ' of AFM data',fontsize=23)
 
 class animation(tk.Frame):
     global canvas4
@@ -765,17 +715,15 @@ class animation(tk.Frame):
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
         button3.pack(pady=10, padx=10)
 
-        button4 = ttk.Button(self, text="Organizing Dataset", command=self.callback)
+        button4 = ttk.Button(self, text="Organizing Dataset", command=lambda: controller.show_frame(load_data))
         button4.pack(pady=10, padx=10)
 
         button5 = ttk.Button(self, text="Home", command=lambda: controller.show_frame(data_cleaning))
         button5.pack(pady=10, padx=10)
 
-        canvas4 = FigureCanvasTkAgg(fig44, self)
-        canvas4.get_tk_widget().pack()
-
 
 class tutorial(ttk.Frame):
+    """The function for making the tutorial about this GUI"""
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
@@ -786,6 +734,7 @@ class tutorial(ttk.Frame):
         label2.pack()
 
         def source():
+            """Export the video for this GUI"""
             os.system("D:/New/Dropbox/UW/training/Cleanroom/EPFMNMEM2016-V004900_DTH.mp4")
 
         vid = ttk.Button(self, text="Play Video", command=source)
@@ -822,5 +771,4 @@ class acknowledge(tk.Frame):
 
 
 app = Sea()
-an = ani.FuncAnimation(fig44, animate, interval=100)
 app.mainloop()
