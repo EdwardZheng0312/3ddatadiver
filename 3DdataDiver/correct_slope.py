@@ -7,6 +7,8 @@ def correct_slope(threeD_array):
 
     Output: 3D numpy array with values adjusted for sample tilt."""
 
+    #Convert matrix from meters to nanometers.
+    threeD_array = np.multiply(threeD_array, -1000000000)
     # We have create an numpy array of the correct shape to populate.
     array_max = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
     #Populate zero arrays with max z values at all x,y positions.
