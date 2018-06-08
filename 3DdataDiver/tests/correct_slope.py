@@ -7,16 +7,12 @@ def correct_slope(threeD_array):
 
     Output: 3D numpy array with values adjusted for sample tilt."""
 
-    #Convert matrix from meters to nanometers.
-    threeD_array = np.multiply(threeD_array, -1000000000)
     # We have create an numpy array of the correct shape to populate.
-    array_min, indZ = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
-    #Populate zero arrays with min z values at all x,y positions.  Also, populate indZ array
-    #with the index of the min z values for use in correct_Zsnsr()
+    array_max = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
+    #Populate zero arrays with max z values at all x,y positions.
     for j in range(len(threeD_array[1,:,1])):
         for i in range(len(threeD_array[1,1,:])):
-            array_min[j,i] = np.min(threeD_array[:,i,j])
-            indZ[j, i] = np.min(np.where(zsensor[:, i, j] == np.min(zsensor[:, i, j])))
+            array_max[j,i] = max(threeD_array[:,i,j])
     #Find the difference between the max and mean values in the z-direction for
     #each x,y point. Populate new matrix with corrected values.
 
@@ -27,8 +23,8 @@ def correct_slope(threeD_array):
     #along the x-direction.
     for j in range(len(threeD_array[1,:,1])):
         for i in range(len(threeD_array[1,1,:])):
-            drifty[j] = np.mean(array_min[j, :])
+            drifty[j] = np.mean(array_max[j, :])
             driftx[i] = np.mean(corrected_array[:, i])
-            corrected_array[j, :] = array_min[j, :] - drifty[j]
+            corrected_array[j, :] = array_max[j, :] - drifty[j]
             corrected_array[:, i] = corrected_array[:, i] - driftx[i]
-    return corrected_array, indZ
+    return corrected_array
