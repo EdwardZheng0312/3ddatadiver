@@ -10,7 +10,8 @@ def correct_slope(threeD_array):
     #Convert matrix from meters to nanometers.
     threeD_array = np.multiply(threeD_array, -1000000000)
     # We have create an numpy array of the correct shape to populate.
-    array_min, indZ = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
+    array_min = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
+    indZ = np.zeros((len(threeD_array[1,:,1]),len(threeD_array[1,1,:])))
     #Populate zero arrays with min z values at all x,y positions.  Also, populate indZ array
     #with the index of the min z values for use in correct_Zsnsr()
     for j in range(len(threeD_array[1,:,1])):
