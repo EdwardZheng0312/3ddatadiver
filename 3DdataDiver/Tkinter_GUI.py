@@ -626,9 +626,8 @@ class twoD_slicing(tk.Frame):
         label2.pack()
 
 
-def Curselect4(event1):  # Z_direction
+def Curselect4(event1):
     global Z_direction
-    global DatCounter
     widget = event1.widget
     select = widget.curselection()
     Z_direction = widget.get(select[0])
@@ -709,7 +708,7 @@ class animation(tk.Frame):
         button1 = ttk.Button(self, text="Get Inputs", command=lambda: (self.numslice(numslices), Judge_Z_direction(Z_direction)))
         button1.pack(pady=10, padx=10)
 
-        button2 = ttk.Button(self, text="Get Z Animation", command=lambda: animate(np.arange(1,5)))
+        button2 = ttk.Button(self, text="Get Z Animation")
         button2.pack(pady=10, padx=10)
 
         button3 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
