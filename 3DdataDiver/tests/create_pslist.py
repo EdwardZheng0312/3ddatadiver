@@ -17,7 +17,7 @@ def create_pslist(filename, x_size, y_size):
     for k in range(len(z)):
         phaseshift = data.iloc[k, 1:]  # [from zero row to the end row, from second column to the last column]
         ps = np.array(phaseshift)
-        assert type(ps) == np.array, "ps type error, array expected"
+        assert type(ps) == np.ndarray, "ps type error, array expected"
         
         ps_reshape = np.reshape(ps, (x_size, y_size))
         pslist.append(ps_reshape)
