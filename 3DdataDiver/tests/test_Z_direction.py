@@ -12,7 +12,6 @@ def test_Z_direction():
     else:
         raise Exception("Input error. String-string expected")
         
-    assert type(z_direction) == str, 'Z_direction type error'
     assert len(Z_dir)==500, 'z error'
    
     return

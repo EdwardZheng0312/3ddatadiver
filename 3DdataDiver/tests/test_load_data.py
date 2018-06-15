@@ -10,8 +10,9 @@ def test_load_data():
         pass
     else:
         raise Exception("Input error. String expected")
-    assert data.shape == (1000,2305), 'data error'
-    assert len(z) == 1000, 'z error'
-    assert len(z_approach) == 500, 'z_appraoch error'
-    assert len(z_retract) == 500, 'z_retract error'
+    assert data.shape == (1000,2305), 'data shape error'
+    assert len(z) == 1000, 'z length error'
+    assert len(z_approach) == 500, 'z_appraoch length error'
+    assert len(z_retract) == 500, 'z_retract length error'
+    
     return

@@ -11,22 +11,22 @@ def test_create_pslist():
     except(Exception):
         pass
     else:
-        raise Exception("Input error. String-integer-integer expected")
+        raise Exception("Input type error. String-integer-integer expected")
     
     try:
         create_pslist.create_pslist("PHASEdata.csv", "a", 48)
     except(Exception):
         pass
     else:
-        raise Exception("Input error. String-integer-integer expected")
+        raise Exception("Input type error. String-integer-integer expected")
         
     try:
         create_pslist.create_pslist("PHASEdata.csv", 48, "a")
     except(Exception):
         pass
     else:
-        raise Exception("Input error. String-integer-integer expected")
+        raise Exception("Input type error. String-integer-integer expected")
         
-    assert len(pslist) == 1000, 'pslist error'
+    assert len(pslist) == 1000, 'pslist length error'
 
     return
