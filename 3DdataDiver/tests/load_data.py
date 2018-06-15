@@ -11,4 +11,11 @@ def load_data(filename):
 
     z_approach = z_approach.reset_index(drop=True)
     z_retract = z_retractt.reset_index(drop=True)
+    
+    
+    assert type(data) == pd.DataFrame, "data type error, pd.DataFrame expected"
+    assert type(z) == pd.core.series.Series, "z type error, pd.core.series.Series expected"
+    assert type(z_approach) == pd.core.series.Series, "z_approach type error, pd.core.series.Series expected"
+    assert type(z_retract) == pd.core.series.Series, "z_retract type error, pd.core.series.Series expected"
+    
     return data, z, z_approach, z_retract
