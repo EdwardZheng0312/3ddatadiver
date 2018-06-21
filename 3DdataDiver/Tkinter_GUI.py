@@ -1,13 +1,11 @@
 import h5py
 import itertools
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 import numpy as np
 import os
-import pandas as pd
-import sys
 import tkinter as tk
 import tkinter.messagebox as tkMessageBox
 
@@ -25,7 +23,8 @@ except ImportError:
     py3 = 1
 
 
-Large_Font = ("Vardana", 15)
+Huge_Font = ("Vardana", 18)
+Large_Font = ("Vardana", 14)
 Small_Font = ("Vardana", 11)
 Tiny_Font = ("Vardana", 8)
 init = 0
@@ -69,40 +68,222 @@ class data_cleaning(tk.Frame):
         valu = widget.get(select[0])                                             #Return the selection from the GUI objectives
         return valu
 
-    def get_source(self, source):
+    def get_source(self, source, export_filename, valu):
         """The function to return the inputs to the GUI functions"""
         global filename
-        global data
-        global z
-        global z_approach
-        global z_retract
+        global export_filename0
+        global FFM
+        global Zsnsr
+        global linearized
+        global reduced_array_approach
+        global reduced_array_retract
         filename = source.get()                                                   #Export the input data file
-        data = self.load_data(filename)[0]                                        #Export the input data from the data file
-        z = self.load_data(filename)[1]                                           #Export the z axis data
-        z_approach = self.load_data(filename)[2]                                  #Export the Z axis data for AFM cantilever goes downward the substrate surface
-        z_retract = self.load_data(filename)[3]                                   #Export the z axis data for AFM cantilever goes upward the substrate surface
-        return filename, data, z, z_approach, z_retract
+        file = h5py.File(filename, "r+")
+        FFM = file['FFM']
+        Zsnsr = FFM['Zsnsr']
+        export_filename0 = export_filename.get()
+        threeD_array = self.generatearray(valu)[0]
+        Zsnsr_threeD_array = self.generatearray(valu)[1]
+        arraytocorr = self.correct_slope(Zsnsr_threeD_array)[0]
+        indZ = self.correct_slope(Zsnsr_threeD_array)[1]
+        linearized = self.bin_array(arraytotcorr, indZ, threeD_array, export_filename0)[0]
+        reduced_array_approach = self.bin_array(arraytotcorr, indZ, threeD_array, export_filename0)[3]
+        reduced_array_retract = self.bin_array(arraytotcorr, indZ, threeD_array, export_filename0)[4]
+        return FFM, Zsnsr, export_filename0, threeD_array, Zsnsr_threeD_array, arraytocorr, indZ, linearized, reduced_array_approach, reduced_array_retract
 
-    def load_data(self, filename):
-        """The function to import and primary data pre cleaning process for the input data file."""
-        data = pd.read_csv(filename)                                              #Read the csv file
-        z = data.iloc[:, 0]                                                       #Define the data range in the input csv file
+    def generatearray(self, valu):
+        """Function to pull single dataset from FFM object and initial formatting.  load_h5 function
+        must be run prior to generate_array.
 
-        z_retractt = z[: len(z)//2][::-1]                                         #Define the Z axis data for AFM cantilever goes upward the substrate surface from the csv file
-        z_approach = z[len(z)//2:][::-1]                                          #Define the Z axis data for AFM cantilever goes downward the substrate surface from the csv file
+        :param target: Name of single dataset given in list keys generated from load_h5 function.
+        target parameter must be entered as a string.
 
-        z_approach = z_approach.reset_index(drop=True)                            #Define the Z axis approach data index starts from 1
-        z_retract = z_retractt.reset_index(drop=True)                             #Define the Z axis retract datat index starts from 1
-        return data, z, z_approach, z_retract
+        Output: formatted numpy array of a single dataset.
 
-    def matconvertor(self):
-        #mat = scipy.io.loadmat()
-        #phase = mat['PHASEtot']
-        return
+        Example:
 
-    def Zsnsr_correction(self):
+        Phase = generate_array('Phase')
 
-        return
+        print(Phase[3,3,3]) = 106.05377
+        """
+        global Zsnsr_threeD_array
+        global threeD_array
+        threeD_array = np.array(FFM[valu])
+        if len(threeD_array[:, 1, 1]) < len(threeD_array[1, 1, :]):
+            threeD_array = threeD_array.transpose(2, 0, 1)
+
+        Zsnsr_threeD_array = np.array(Zsnsr)
+        if len(Zsnsr_threeD_array[:, 1, 1]) < len(Zsnsr_threeD_array[1, 1, :]):
+            Zsnsr_threeD_array = Zsnsr_threeD_array.transpose(2, 0, 1)
+        print(threeD_array)
+        print(threeD_array[1,1,1])
+        print(threeD_array.shape)
+        return threeD_array, Zsnsr_threeD_array
+
+    def correct_slope(self, Zsnsr_threeD_array):
+        """Function that corrects for sample tilt and generates arrays used in the bin_array
+        function.
+
+        :param Zsnsr: 3D numpy array of a single signal feed.  For instance, the entire dataset of
+        zsensor data.  The function is flexible enough to work on any raw data signal, but can
+        only work on one at a time.
+
+        Output: 3D numpy array with values adjusted for sample tilt, a 2D numpy array with
+        the index of the max Zsensor value for each x,y coordinate, 1D numpy array of the X
+        direction correction, and 1D numpy array of the Y direction correction.
+
+        Example of function calling format:
+        ZSNSRtotCORR, indZ, driftx, drifty = correct_slope(zsensor)"""
+        global arraytotcorr
+        global indZ
+        # Convert matrix from meters to nanometers.
+        Zsnsr_threeD_array = np.multiply(Zsnsr_threeD_array, -1000000000)
+        # Replace zeros and NaN in raw data with neighboring values.  Interpolate does not work
+        # as many values are on the edge of the array.
+        Zsnsr_threeD_array[Zsnsr_threeD_array == 0] = np.nan
+        mask = np.isnan(Zsnsr_threeD_array)
+        Zsnsr_threeD_array[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), Zsnsr_threeD_array[~mask])
+        # We have create an numpy array of the correct shape to populate.
+        array_min = np.zeros((len(Zsnsr_threeD_array[1, :, 1]), len(Zsnsr_threeD_array[1, 1, :])))
+        indZ = np.zeros((len(Zsnsr_threeD_array[1, :, 1]), len(Zsnsr_threeD_array[1, 1, :])))
+        # Populate zero arrays with min z values at all x,y positions.  Also, populate indZ array
+        # with the index of the min z values for use in correct_Zsnsr()
+        for j in range(len(Zsnsr_threeD_array[1, :, 1])):
+            for i in range(len(Zsnsr_threeD_array[1, 1, :])):
+                array_min[j, i] = np.min(Zsnsr_threeD_array[:, i, j])
+                indZ[j, i] = np.min(np.where(Zsnsr_threeD_array[:, i, j] == np.min(Zsnsr_threeD_array[:, i, j])))
+
+        # Find the difference between the max and mean values in the z-direction for
+        # each x,y point. Populate new matrix with corrected values.
+        driftx = np.zeros(len(Zsnsr_threeD_array[1, :, 1]))
+        drifty = np.zeros(len(Zsnsr_threeD_array[1, 1, :]))
+        corrected_array = np.zeros((len(Zsnsr_threeD_array[1, :, 1]), len(Zsnsr_threeD_array[1, 1, :])))
+
+        # Correct the for sample tilt along to the y-direction, then correct for sample tilt
+        # along the x-direction.
+        for j in range(len(Zsnsr_threeD_array[1, :, 1])):
+            for i in range(len(Zsnsr_threeD_array[1, 1, :])):
+                drifty[j] = np.mean(array_min[j, :])
+                driftx[i] = np.mean(corrected_array[:, i])
+                corrected_array[j, :] = array_min[j, :] - drifty[j]
+                corrected_array[:, i] = corrected_array[:, i] - driftx[i]
+
+        # Apply corrected slope to each level of 3D numpy array
+        arraytotcorr = np.empty_like(Zsnsr_threeD_array)
+        for j in range(len(Zsnsr_threeD_array[1, :, 1])):
+            for i in range(len(Zsnsr_threeD_array[1, 1, :])):
+                arraytotcorr[:, i, j] = Zsnsr_threeD_array[:, i, j] - driftx[i] - drifty[j]
+        print(arraytotcorr)
+        print(len(arraytotcorr[1,:,1]))
+        print(len(arraytotcorr[1, 1, :]))
+        print(indZ)
+        return arraytotcorr, indZ
+
+    def Zsnsr_bin_array(self, arraytotcorr, indZ, Zsnsr_threeD_array):
+        """
+        Function to reduce the size of large datasets.  Data placed into equidistant bins for each x,y coordinate and new
+        vector created from the mean of each bin.  Size of equidistant bins determined by 0.01 nm increments of Zsensor
+        data.
+        :param arraytotcorr: Zsensor data corrected for sample tilt using correct_slope function.  Important to use this
+         and not raw Zsensor data so as to get an accurate Zmax value.
+        :param indZ: Index of Zmax for each x,y coordinate to cut data set into approach and retract.
+        :param rawarray: 3D numpy array the user wishes to reduce in size (e.g. phase, amp)
+        :return: 3D numpy array of binned approach values, 3D numpy array of binned retract values.
+        """
+
+        # Generate empty numpy arrays to populate.
+        global Zsnsr_reduced_array_approach
+        global Zsnsr_reduced_array_retract
+        global arraymean
+        global h5file
+        arraymean = np.zeros(len(arraytotcorr[:, 1, 1]))
+        # Create list of the mean Zsensor value for each horizontal slice of Zsensor array.
+        for z in range(len(arraymean)):
+            arraymean[z] = np.mean(arraytotcorr[z, :, :])
+        # Turn mean Zsensor data into a linear vector with a step size of 0.01 nm.
+        linearized = np.flip(np.arange(0, np.max(arraymean), (0.01)), axis=0)
+        Zsnsr_reduced_array_approach = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
+        Zsnsr_reduced_array_retract = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
+        # Replace zeros and NaN in raw data with neighboring values.  Interpolate does not work
+        # as many values are on the edge of the array.
+        Zsnsr_threeD_array[Zsnsr_threeD_array == 0] = np.nan
+        mask = np.isnan(Zsnsr_threeD_array)
+        Zsnsr_threeD_array[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), Zsnsr_threeD_array[~mask])
+        # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
+        # Generate new arrays from the means of each bin.
+        for j in range(len(arraytotcorr[1, :, 1])):
+            for i in range(len(arraytotcorr[1, 1, :])):
+                z = Zsnsr_threeD_array[:(int(indZ[i, j])), i, j]
+                bin_means = (np.histogram(z, len(linearized), weights=z)[0] / np.histogram(z, len(linearized))[0])
+                Zsnsr_reduced_array_approach[:, i, j] = bin_means.flatten()
+
+        for j in range(len(arraytotcorr[1, :, 1])):
+            for i in range(len(arraytotcorr[1, 1, :])):
+                z = Zsnsr_threeD_array[-(int(indZ[i, j])):, i, j]
+                bin_means = (np.histogram(z, len(linearized), weights=z)[0] / np.histogram(z, len(linearized))[0])
+                Zsnsr_reduced_array_retract[:, i, j] = bin_means.flatten()
+        return Zsnsr_reduced_array_approach, Zsnsr_reduced_array_retract
+
+    def bin_array(self, arraytotcorr, indZ, threeD_array, export_filename0):
+        """
+        Function to reduce the size of large datasets.  Data placed into equidistant bins for each x,y coordinate and new
+        vector created from the mean of each bin.  Size of equidistant bins determined by 0.01 nm increments of Zsensor
+        data.
+        :param arraytotcorr: Zsensor data corrected for sample tilt using correct_slope function.  Important to use this
+         and not raw Zsensor data so as to get an accurate Zmax value.
+        :param indZ: Index of Zmax for each x,y coordinate to cut data set into approach and retract.
+        :param rawarray: 3D numpy array the user wishes to reduce in size (e.g. phase, amp)
+        :return: 3D numpy array of binned approach values, 3D numpy array of binned retract values.
+        """
+
+        # Generate empty numpy arrays to populate.
+        global reduced_array_approach
+        global reduced_array_retract
+        global linearized
+        global h5file
+        arraymean = np.zeros(len(arraytotcorr[:, 1, 1]))
+        # Create list of the mean Zsensor value for each horizontal slice of Zsensor array.
+        for z in range(len(arraymean)):
+            arraymean[z] = np.mean(arraytotcorr[z, :, :])
+        # Turn mean Zsensor data into a linear vector with a step size of 0.01 nm.
+        linearized = np.flip(np.arange(0, np.max(arraymean), (0.01)), axis=0)
+        reduced_array_approach = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
+        reduced_array_retract = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
+        # Replace zeros and NaN in raw data with neighboring values.  Interpolate does not work
+        # as many values are on the edge of the array.
+        threeD_array[threeD_array == 0] = np.nan
+        mask = np.isnan(threeD_array)
+        threeD_array[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), threeD_array[~mask])
+        # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
+        # Generate new arrays from the means of each bin.
+        print(indZ)
+        print(indZ[5,5])
+        print(int(indZ[5, 5]))
+        print(threeD_array[:(int(indZ[5, 5]))])
+        print(threeD_array[:(int(indZ[5, 5])), 5, 5])
+        for j in range(len(arraytotcorr[1, :, 1])):
+            for i in range(len(arraytotcorr[1, 1, :])):
+                z = threeD_array[:(int(indZ[i, j])), i, j]
+                bin_means = (np.histogram(z, len(linearized), weights=z)[0] / np.histogram(z, len(linearized))[0])
+                reduced_array_approach[:, i, j] = bin_means.flatten()
+
+        for j in range(len(arraytotcorr[1, :, 1])):
+            for i in range(len(arraytotcorr[1, 1, :])):
+                z = threeD_array[-(int(indZ[i, j])):, i, j]
+                bin_means = (np.histogram(z, len(linearized), weights=z)[0] / np.histogram(z, len(linearized))[0])
+                reduced_array_retract[:, i, j] = bin_means.flatten()
+
+        h5file_approach = export_filename0 + str("_approach_") + str(valu) + str(".h5")  # Define the final name of the h5 file
+
+        h = h5py.File(h5file_approach, 'w')  # Create the empty h5 file
+        h.create_dataset("data", data=reduced_array_approach)
+
+        h5file_retract = export_filename0 + str("_retract_") + str(valu) + str(".h5")  # Define the final name of the h5 file
+
+        h = h5py.File(h5file_retract, 'w')  # Create the empty h5 file
+        h.create_dataset("data", data=reduced_array_retract)
+        print(arraymean)
+        return linearized, h5file_approach, h5file_retract, reduced_array_approach, reduced_array_retract
 
     def clear(self):
 
@@ -112,31 +293,37 @@ class data_cleaning(tk.Frame):
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
 
-        label1 = ttk.Label(self, text="Step 1: Data Pre-processing", font='Large_Font', background='#ffffff')
+        label1 = ttk.Label(self, text="Step 1: Data Pre-processing", font=Huge_Font, background='#ffffff')
         label1.pack(pady=10, padx=10)
 
-        label2 = ttk.Label(self, text="Input Dataset",font="Small_Font", background='#ffffff')
+        label2 = ttk.Label(self, text="Input Dataset",font=Large_Font, background='#ffffff')
         label2.pack()
         source =ttk.Entry(self)
         source.pack(pady=10, padx=10)
 
-        button0 = ttk.Button(self, text="Get Dataset", command=lambda: (self.get_source(source)))
-        button0.pack(pady=10, padx=10)
-
-        label3 = ttk.Label(self, text="Select the Objectives", font='Large_Font', background='#ffffff')
-        label3.pack()
+        label3 = ttk.Label(self, text="Select the Objectives", font=Large_Font, background='#ffffff')
+        label3.pack(padx=10, pady=10)
         lab = LabelFrame(self)
         lab.pack()
         listbox = Listbox(lab, exportselection=0)
-        listbox.configure(height=4)
+        listbox.configure(height=5)
         listbox.pack()
-        listbox.insert(1, "Phase Shift")
-        listbox.insert(2, "Tip Deflection")
-        listbox.insert(3, "Amplitude")
-        listbox.insert(4, "Frequency")
+        listbox.insert(1, 'Amp')
+        listbox.insert(2, "Drive")
+        listbox.insert(3, "Phase")
+        listbox.insert(4, "Raw")
+        listbox.insert(5, "Zsnsr")
         listbox.bind('<<ListboxSelect>>', self.Curselect1)
 
-        button1 = ttk.Button(self, text="Data Preprocessing",command=lambda: controller.self)
+        label4 = ttk.Label(self, text='Export Clean Dataset', font=Large_Font, background='#ffffff')
+        label4.pack()
+        export_filename = ttk.Entry(self)
+        export_filename.pack()
+
+        button0 = ttk.Button(self, text="Input the Information", command=lambda: (self.get_source(source, export_filename, valu)))
+        button0.pack(pady=10, padx=10)
+
+        button1 = ttk.Button(self, text="Export H5 Files", command=lambda: self.bin_array(arraytotcorr, indZ, threeD_array, export_filename0))
         button1.pack(pady=10, padx=10)
 
         button2 = ttk.Button(self, text="Organize Dataset", command=lambda: controller.show_frame(load_data))
@@ -171,16 +358,6 @@ class load_data(tk.Frame):
         txtysize.delete(0,END)                                                    #Clean up the number data in y aixs from the entry
         txtxactual.delete(0,END)                                                  #Clean up the input x actual size data from the entry
         txtyactual.delete(0,END)                                                  #Clean up the input y actual size data from the entry
-
-    def create_pslist(self, x_size, y_size):
-        """The function for reshape the input data file depends on certain shape of the input data file"""
-        pslist = []
-        for k in range(len(z)):                                                   #Set up the range of Z axis you are interested in
-            phaseshift = data.iloc[k, 1:]                                         #Select the data points from zero row to the end row, from second column to the last column]
-            ps = np.array(phaseshift)                                             #Convert from the list to the numpy array
-            ps_reshape = np.reshape(ps, (x_size, y_size))                         #Reshape the data into the user defined array
-            pslist.append(ps_reshape)                                             #Export all the reshaped data points for each z value into one list
-        return pslist
 
     def __init__(self, parent, controller):                                       #Define all the controller in the load_data window
         global txtxsize
@@ -241,29 +418,15 @@ class threeD_plot(tk.Frame):
         Z_direction = widget.get(select[0])
         return Z_direction
 
-    def create_pslist(self, x_size, y_size):
-        """The function for reshape the input data file depends on certain shape of the input data file"""
-        pslist = []
-        for k in range(len(z)):
-            phaseshift = data.iloc[k, 1:]
-            ps = np.array(phaseshift)
-            ps_reshape = np.reshape(ps, (x_size, y_size))
-            pslist.append(ps_reshape)
-        return pslist
-
-    def threeDplot(self, Z_direction, z, x_actual, y_actual, x_size, y_size):
+    def threeDplot(self, Z_direction, x_actual, y_actual, x_size, y_size):
         """3D plot function"""
         global canvas
         if Z_direction == "Up":                                                     #If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
-            Z_dir = data.iloc[:,0].iloc[:len(z) // 2][::-1].reset_index(drop=True)
-            data1 = data.iloc[:,:].iloc[:len(z) // 2].drop(['Z (nm)'], axis=1)[::-1].reset_index(drop=True)
+            Z_dir = linearized
+            data1 = reduced_array_retract
         else:                                                                       #If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
-            Z_dir = data.iloc[:,0].iloc[len(z) // 2:].reset_index(drop=True)
-            data1=data.iloc[:,:].iloc[len(z) // 2:].drop(['Z (nm)'], axis=1).reset_index(drop=True)
-
-        retract_as_numpy = data1.as_matrix(columns=None)                            #Convert the data to the maxtrix
-        retract_as_numpy_reshape1 = retract_as_numpy.reshape(len(Z_dir), x_size, y_size)    #Reshape the data
-        retract_as_numpy_reshape2 = retract_as_numpy_reshape1.flatten('F')          #Convert the data points into one list with the same sequencec
+            Z_dir = linearized
+            data1 = reduced_array_approach
 
         x = np.linspace(init, x_actual, x_size)                                     #Define the plotting valuable x
         y = np.linspace(init, y_actual, y_size)                                     #Define the plotting valuable y
@@ -273,7 +436,7 @@ class threeD_plot(tk.Frame):
         for element in itertools.product(x, y, z):                                  #Creates a "flat" list representation of a 3D space
             points.append(element)
 
-        fxyz = list(retract_as_numpy_reshape2)                                      #Convert the flatten data points list into another list
+        fxyz = list(data1)                                      #Convert the flatten data points list into another list
         xi, yi, zi = zip(*points)                                                   #Zipped the flatten data points into the represented 3D space one by one in the same order as the flatten data points list
 
         fig = plt.figure(figsize=(11, 9))                                           #Define the figure to make a plot
@@ -315,7 +478,7 @@ class threeD_plot(tk.Frame):
         listbox.insert(2, "Down")
         listbox.bind('<<ListboxSelect>>', self.Curselect2)
 
-        button1 = ttk.Button(self, text="Get 3D Plot", command=lambda: self.threeDplot(Z_direction, z, x_actual, y_actual, x_size, y_size))
+        button1 = ttk.Button(self, text="Get 3D Plot", command=lambda: self.threeDplot(Z_direction, x_actual, y_actual, x_size, y_size))
         button1.pack(pady=10, padx=10)
 
         button2 = ttk.Button(self, text="Clear the Inputs", command=lambda: self.clear())
@@ -356,26 +519,18 @@ class twoD_slicing(tk.Frame):
         select = widget.curselection()
         Z_direction = widget.get(select[0])
         if Z_direction == "Up":
-            Z_dir = z_retract
+            Z_dir = linearized
         else:
-            Z_dir = z_approach
+            Z_dir = linearized
         return Z_dir
 
-    def create_pslist(self, x_size, y_size):
+    def create_pslist(self, Z_direction):
         """The function for reshape the input data file depends on certain shape of the input data file, and also judge the AFM cantilever movement direction"""
-        pslist = []
+        global pslist
         if Z_direction == "Up":
-            for k in range(len(z)//2-1, -1, -1):
-                phaseshift = data.iloc[k, 1:]
-                ps = np.array(phaseshift)
-                ps_reshape = np.reshape(ps, (x_size, y_size))
-                pslist.append(ps_reshape)
+            pslist = reduced_array_retract
         else:
-            for k in range(len(z)-1, len(z)//2-1, -1):
-                phaseshift = data.iloc[k, 1:]
-                ps = np.array(phaseshift)
-                ps_reshape = np.reshape(ps, (x_size, y_size))
-                pslist.append(ps_reshape)
+            pslist = reduced_array_approach
         return pslist
 
     def twoDX_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
@@ -387,11 +542,11 @@ class twoD_slicing(tk.Frame):
         c = Z_dir                                                                    #Define the z space
         X, Z, Y = np.meshgrid(a, c, b)                                               #Create the meshgrid for the 3d space
 
-        As = np.array(self.create_pslist(x_size, y_size))[:, location_slices, :]     #Select the phaseshift data points in the certain slice plane
+        As = np.array(self.create_pslist(Z_direction))[:, location_slices, :]     #Select the phaseshift data points in the certain slice plane
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())   #Define the fixed colorbar range based the overall phaseshift values from the input data file
+        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, cmap = 'viridis', vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())   #Define the fixed colorbar range based the overall phaseshift values from the input data file
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))                                                    #Label the colorbar
         ax.set_xlim(left=init, right=x_actual)
@@ -414,7 +569,7 @@ class twoD_slicing(tk.Frame):
 
         fig1 = plt.figure(figsize=(11, 9))
         plt.subplot(111)
-        plt.imshow(As, aspect='auto', origin="lower", vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        plt.imshow(As, aspect='auto', origin="lower", vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, y_size-1, init, len(Z_dir)-1])                               #Adjust the axis range for the 2D slicing
         plt.xlabel('Y', fontsize=12)
         plt.ylabel('Z', fontsize=12)
@@ -438,11 +593,11 @@ class twoD_slicing(tk.Frame):
         c = Z_dir
         X, Z, Y = np.meshgrid(a, c, b)
 
-        Bs = np.array(self.create_pslist(x_size, y_size))[init:len(Z_dir), :, location_slices]
+        Bs = np.array(self.create_pslist(Z_direction))[init:len(Z_dir), :, location_slices]
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=Bs, s=6, alpha=0.2, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        im = ax.scatter(X, Y, Z, c=Bs, s=6, alpha=0.2, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -468,7 +623,7 @@ class twoD_slicing(tk.Frame):
 
         fig2 = plt.figure(figsize=(11, 9))
         plt.subplot(111)
-        plt.imshow(Bs, aspect='auto', vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        plt.imshow(Bs, aspect='auto', vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, x_size-1, init, len(Z_dir)-1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Z', fontsize=12)
@@ -486,7 +641,8 @@ class twoD_slicing(tk.Frame):
     def twoDZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
         """3D Plotting function for Z direction slicing"""
         global canvas1
-        phaseshift = (self.create_pslist(x_size, y_size))[location_slices-1]
+        print(self.create_pslist(Z_direction))
+        phaseshift = (self.create_pslist(Z_direction))[location_slices-1]
 
         a = np.linspace(init, x_actual, x_size)
         b = np.linspace(init, y_actual, y_size)
@@ -495,7 +651,7 @@ class twoD_slicing(tk.Frame):
 
         fig = plt.figure(figsize=(11, 11))
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=l, s=6, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        im = ax.scatter(X, Y, Z, c=l, s=6, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -524,12 +680,12 @@ class twoD_slicing(tk.Frame):
     def twoZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
         """2D Plotting function for Z direction slicing"""
         global canvas2
-        phaseshift = (self.create_pslist(x_size, y_size))[location_slices-1]
+        phaseshift = (self.create_pslist(Z_direction))[location_slices-1]
 
         l = phaseshift
 
         fig = plt.figure(figsize=(9, 9))
-        plt.imshow(l, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        plt.imshow(l, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, x_size-1, init, y_size-1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
@@ -545,7 +701,7 @@ class twoD_slicing(tk.Frame):
         fig.savefig(setStr)
 
         fig1 = plt.figure(figsize=(9, 9))
-        plt.imshow(l, vmax=np.array(self.create_pslist(x_size, y_size)).max(), vmin=np.array(self.create_pslist(x_size, y_size)).min())
+        plt.imshow(l, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, x_size-1, init, y_size-1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
@@ -671,6 +827,8 @@ class animation(tk.Frame):
         tk.Frame.configure(self, background='#ffffff')
         label = ttk.Label(self, text="Step 5: 2D Slicing Animation", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
+        label0 = ttk.Label(self, text="Animation is under construction. It will come soon!", font="Large_Font", background='#ffffff')
+        label0.pack(padx = 10, pady = 10)
 
         label1 =ttk.Label(self, text="Number of Slices", font='Large_Font', background='#ffffff')
         label1.pack()
