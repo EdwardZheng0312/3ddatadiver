@@ -38,7 +38,7 @@ class Sea(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file='taiji.png'))  # Set up the iconphoto for our software
-        tk.Tk.wm_title(self, "High-Resolution AFM 3D Visualization Client")  # Set up the name of our software
+        tk.Tk.wm_title(self, "3DdataDiver")  # Set up the name of our software
         self.state('zoomed')  # Set up the inital window operation size
 
         container = tk.Frame(self)  # Define the properties of the bracket of windows inside the GUI
@@ -92,7 +92,6 @@ class data_cleaning(tk.Frame):
         linearized = self.bin_array(arraytotcorr, indZ, threeD_array)[0]
         reduced_array_approach = self.bin_array(arraytotcorr, indZ, threeD_array)[1]
         reduced_array_retract = self.bin_array(arraytotcorr, indZ, threeD_array)[2]
-        print(reduced_array_retract)
         return FFM, Zsnsr, export_filename0, threeD_array, Zsnsr_threeD_array, arraytocorr, indZ, linearized, reduced_array_approach, reduced_array_retract
 
     def generatearray(self, valu):
@@ -268,7 +267,7 @@ class data_cleaning(tk.Frame):
         listbox.insert(5, "Zsnsr")
         listbox.bind('<<ListboxSelect>>', self.Curselect1)
 
-        label4 = ttk.Label(self, text='Export Clean Dataset', font=Large_Font, background='#ffffff')
+        label4 = ttk.Label(self, text='Export Clean Dataset Name', font=Large_Font, background='#ffffff')
         label4.pack()
         export_filename = ttk.Entry(self)
         export_filename.pack()
@@ -380,16 +379,15 @@ class threeD_plot(tk.Frame):
         return Z_direction
 
     def clear(self):
-        txtzdir.delete(0, END)  # Clean up the input for the Z direction
         canvas.get_tk_widget().destroy()  # Clean up the export the figure in window
 
     def threeDplot(self, Z_direction, x_actual, y_actual, x_size, y_size):
         """3D plot function"""
         global canvas
-        if Z_direction == "Up":  # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        if Z_direction == "Up":                         # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = np.flip(linearized, axis=0)
             data1 = reduced_array_retract
-        else:  # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        else:                                           # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = linearized
             data1 = reduced_array_approach
 
@@ -397,17 +395,15 @@ class threeD_plot(tk.Frame):
         y = np.linspace(init, y_actual, y_size)         # Define the plotting valuable y
         z = np.linspace(init, Z_dir.max(), len(Z_dir))  # Define the plotting valuable z
 
-        points = []
-        for element in itertools.product(x, y, z):      #Creates a "flat" list representation of a 3D space
-            points.append(element)
+        xi,zi,yi = np.meshgrid(x,z,y)
 
-        fxyz = list(data1)                              #Convert the flatten data points list into another list
-        xi, yi, zi = zip(*points)                       #Zipped the flatten data points into the represented 3D space one by one in the same order as the flatten data points list
-
-        fig = plt.figure(figsize=(11, 9))               #Define the figure to make a plot
+        fig = plt.figure(figsize=(11, 9), facecolor='white')               #Define the figure to make a plot
         ax = fig.add_subplot(111, projection='3d')      #Define the 3d plot
-        im = ax.scatter(zi, yi, xi, c=fxyz, alpha=0.1, vmax=data1.max(), vmin=data1.min())  #Define the scatter plot
-        plt.colorbar(im)  # Define the colorbar in the scatter plot
+        im = ax.scatter(xi, yi, zi, c=data1, alpha=0.1, vmax=np.array(data1).max(), vmin=np.array(data1).min())  #Define the scatter plot
+        plt.colorbar(im)                                # Define the colorbar in the scatter plot
+        ax.set_xlim(left=init, right=x_actual)          # Define the X limit for the plot
+        ax.set_ylim(top=y_actual, bottom=init)          # Define the Y limit for the plot
+        ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())# Define the Z limit for the plot
         ax.set_xlabel('X(nm)', fontsize=15)             # Define the X label for the plot
         ax.set_ylabel('Y(nm)', fontsize=15)             # Define the Y label for the plot
         ax.set_zlabel('Z(nm)', fontsize=15)             # Define the Z label for the plot
@@ -417,7 +413,7 @@ class threeD_plot(tk.Frame):
         canvas.show()
         canvas.get_tk_widget().pack(side=tk.TOP)        # Define the display region in GUI
 
-        fig.savefig("3D Plot_" + str(Z_direction) + ".tif")  # Save the export figure as tif file
+        fig.savefig("3D Plot_" + str(Z_direction)+ str(valu) + ".tif")  # Save the export figure as tif file
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -509,14 +505,11 @@ class twoD_slicing(tk.Frame):
         c = Z_dir  # Define the z space
         X, Z, Y = np.meshgrid(a, c, b)  # Create the meshgrid for the 3d space
 
-        As = np.array(self.create_pslist(Z_direction))[:, location_slices,
-             :]  # Select the phaseshift data points in the certain slice plane
+        As = np.array(self.create_pslist(Z_direction))[:, location_slices, :]  # Select the phaseshift data points in the certain slice plane
 
-        fig = plt.figure(figsize=(9, 11))
+        fig = plt.figure(figsize=(9, 11), facecolor='white')
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, vmax=np.array(self.create_pslist(Z_direction)).max(),
-                        vmin=np.array(self.create_pslist(
-                            Z_direction)).min())  # Define the fixed colorbar range based the overall phaseshift values from the input data file
+        im = ax.scatter(X, Y, Z, c=As, s=6, alpha=0.2, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())  # Define the fixed colorbar range based the overall phaseshift values from the input data file
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))  # Label the colorbar
         ax.set_xlim(left=init, right=x_actual)
@@ -531,7 +524,7 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        h5file = export_filename2 + str(".h5")  # Define the final name of the h5 file
+        h5file = export_filename2 + str(Z_direction) + str(".h5")  # Define the final name of the h5 file
 
         # Assuming As is a list of lists
         h = h5py.File(h5file, 'w')  # Create the empty h5 file
@@ -540,7 +533,7 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_Xslices.tif'.format(export_filename2)
         fig.savefig(setStr)
 
-        fig1 = plt.figure(figsize=(11, 9))
+        fig1 = plt.figure(figsize=(11, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(As, aspect='auto', origin="lower", vmax=np.array(self.create_pslist(Z_direction)).max(),vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, y_size - 1, init, len(Z_dir) - 1])  # Adjust the axis range for the 2D slicing
@@ -568,10 +561,9 @@ class twoD_slicing(tk.Frame):
 
         Bs = np.array(self.create_pslist(Z_direction))[init:len(Z_dir), :, location_slices]
 
-        fig = plt.figure(figsize=(9, 11))
+        fig = plt.figure(figsize=(9, 11), facecolor='white')
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=Bs, s=6, alpha=0.2, vmax=np.array(self.create_pslist(Z_direction)).max(),
-                        vmin=np.array(self.create_pslist(Z_direction)).min())
+        im = ax.scatter(X, Y, Z, c=Bs, s=6, alpha=0.2, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -586,7 +578,7 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        h5file = export_filename2 + str(".h5")
+        h5file = export_filename2 + str(Z_direction) + str(".h5")
 
         # Assuming Bs is a list of lists
         h = h5py.File(h5file, 'w')
@@ -595,7 +587,7 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_Yslices.tif'.format(export_filename2)
         fig.savefig(setStr)
 
-        fig2 = plt.figure(figsize=(11, 9))
+        fig2 = plt.figure(figsize=(11, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(Bs, aspect='auto', vmax=np.array(self.create_pslist(Z_direction)).max(),
                    vmin=np.array(self.create_pslist(Z_direction)).min())
@@ -616,7 +608,6 @@ class twoD_slicing(tk.Frame):
     def twoDZ_slicings(self, location_slices, export_filename2, x_actual, y_actual, x_size, y_size):
         """3D Plotting function for Z direction slicing"""
         global canvas1
-        print(self.create_pslist(Z_direction))
         phaseshift = (self.create_pslist(Z_direction))[location_slices - 1]
 
         a = np.linspace(init, x_actual, x_size)
@@ -624,10 +615,9 @@ class twoD_slicing(tk.Frame):
         X, Z, Y = np.meshgrid(a, Z_dir[(location_slices) - 1], b)
         l = phaseshift
 
-        fig = plt.figure(figsize=(9, 11))
+        fig = plt.figure(figsize=(9, 11), facecolor='white')
         ax = fig.add_subplot(111, projection='3d')
-        im = ax.scatter(X, Y, Z, c=l, s=6, vmax=np.array(self.create_pslist(Z_direction)).max(),
-                        vmin=np.array(self.create_pslist(Z_direction)).min())
+        im = ax.scatter(X, Y, Z, c=l, s=6, vmax=np.array(self.create_pslist(Z_direction)).max(), vmin=np.array(self.create_pslist(Z_direction)).min())
         cbar = plt.colorbar(im)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -643,7 +633,7 @@ class twoD_slicing(tk.Frame):
         canvas1.show()
         canvas1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        h5file = export_filename2 + str(".h5")
+        h5file = export_filename2 + str(Z_direction) + str(".h5")
 
         # Assuming phaseshift is a list of lists
         h = h5py.File(h5file, 'w')
@@ -659,14 +649,13 @@ class twoD_slicing(tk.Frame):
 
         l = phaseshift
 
-        fig = plt.figure(figsize=(9, 9))
+        fig = plt.figure(figsize=(9, 9), facecolor='white')
         plt.imshow(l, vmax=np.array(self.create_pslist(Z_direction)).max(),
                    vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, x_size - 1, init, y_size - 1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
-        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices) - 1], 4)) + 'nm) for the ' + str(
-            valu) + ' of AFM data', fontsize=13)
+        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
         cbar = plt.colorbar()
         cbar.set_label(str(valu))
 
@@ -677,19 +666,14 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_2d_Zslices.tif'.format(export_filename2)
         fig.savefig(setStr)
 
-        fig1 = plt.figure(figsize=(9, 9))
-        plt.imshow(l, vmax=np.array(self.create_pslist(Z_direction)).max(),
-                   vmin=np.array(self.create_pslist(Z_direction)).min())
+        fig1 = plt.figure(figsize=(9, 9), facecolor='white')
+        plt.imshow(l, vmax=np.array(self.create_pslist(Z_direction)).max(),  vmin=np.array(self.create_pslist(Z_direction)).min())
         plt.axis([init, x_size - 1, init, y_size - 1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
-        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices) - 1], 4)) + 'nm) for the ' + str(
-            valu) + ' of AFM data', fontsize=13)
+        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
         plt.colorbar()
         x = np.array(plt.ginput(1))
-        s = int((x[0][0] / 24) // (x_actual / (x_size - 1)))
-        d = int((x[0][1] / 24) // (y_actual / (y_size - 1)))
-        print(l[s][d])
         canvas3 = FigureCanvasTkAgg(fig1, self)
         canvas3.show()
 
@@ -800,7 +784,6 @@ class animation(tk.Frame):
     def clear(self):
         numslices.delete(0, END)
         txtfilename2.delete(0, END)
-        cbar4.remove()
         canvas4.get_tk_widget().destroy()
 
     def __init__(self, parent, controller):
