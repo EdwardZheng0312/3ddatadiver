@@ -454,8 +454,8 @@ class twoD_slicing(tk.Frame):
     def location_slices(self, txtnslices):
         """Define the location of the slice you are interested"""
         global location_slices
-        location_slices = txtnslices.get()  # Export the locations of slice from the GUI
-        if int(location_slices) in range(0, int(np.array(linearized).max())):  # Testing for the input whether or not beyond the input data file
+        location_slices = int(txtnslices.get())  # Export the locations of slice from the GUI
+        if location_slices in range(1, Z_dir.max()+1):  # Testing for the input whether or not beyond the input data file
             pass
         else:
             tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 0 to " + str(
