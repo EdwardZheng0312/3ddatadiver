@@ -454,13 +454,19 @@ class twoD_slicing(tk.Frame):
     def location_slices(self, txtnslices):
         """Define the location of the slice you are interested"""
         global location_slices
-        location_slices = int(txtnslices.get())  # Export the locations of slice from the GUI
-        if location_slices in range(1,len(Z_dir) + 1):  # Testing for the input whether or not beyond the input data file
+        location_slices = txtnslices.get()  # Export the locations of slice from the GUI
+        if int(location_slices) in range(0, int(np.array(linearized).max())):  # Testing for the input whether or not beyond the input data file
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 1 to " + str(
-                len(Z_dir)) + ".")  # If the input the beyond the range, pop-up the error message
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range is between 0 to " + str(
+                linearized.max()) + ".")  # If the input the beyond the range, pop-up the error message
         return location_slices
+
+    def pixel_converter(self, txtnslices):
+        """Convert from the real z to pixel"""
+        global location_slices_pixel
+        location_slices_pixel = (location_slices // np.array(Z_dir).max()) * len(linearized)
+        return location_slices_pixel
 
     def export_filename(self, txtfilename):
         """Export the user input export filename into the GUI"""
