@@ -28,9 +28,15 @@ In  order to help users interact with AFM data  through graphical icons and visu
 
 # Modules required
 *h5py
+
 *itertools
+
 *matplotlib
+
 *os
+
 *numpy
+
 *pandas
+
 *tkinter
