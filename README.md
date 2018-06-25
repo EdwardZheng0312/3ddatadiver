@@ -16,3 +16,21 @@ run.
 2. Visualize 3D AFM data
 	* View full data set or slices in XY, XZ, or YZ planes.  Sliced data can be quickly viewed in 2D or 3D rendings.  Animation
 	option availible in the 3D renderings. Supported by threeD_plot, twoD_slicing, and  animation components.   
+
+# GUI design
+In  order to help users interact with AFM data  through graphical icons and visual indicators instead of complicated code, we build a graphical user interface (GUI) by Tkinter.
+3DdataDiver has four main functions:
+
+(1)Data Cleaning 
+(2)Visualization of the approach or retract dataset.  3DdataDiver is flexible enough to handle datasets of different sizes. 
+(3)Slicing the dataset in x plane, y plane, or z plane.  Users can select any layer of interest to see plots in 2D and 3D  cartesian coordinate systems. For the z-slicing the phase shift (or amplitude, etc) of the a selected point is displayed along with the corresponding coordinates.
+(4)Exporting of .h5 files generated in any of the aforementioned steps.  This allows users to users to perform their own manipulations on cleaned data and/or sliced data.
+
+# Modules required
+*h5py
+*itertools
+*matplotlib
+*os
+*numpy
+*pandas
+*tkinter
