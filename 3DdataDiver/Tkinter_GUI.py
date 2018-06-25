@@ -399,7 +399,8 @@ class threeD_plot(tk.Frame):
 
         fig = plt.figure(figsize=(11, 9), facecolor='white')               #Define the figure to make a plot
         ax = fig.add_subplot(111, projection='3d')      #Define the 3d plot
-        im = ax.scatter(xi, yi, zi, c=data1, alpha=0.1, vmax=np.array(data1).max(), vmin=np.array(data1).min())  #Define the scatter plot
+        # Define the scatter plot
+        im = ax.scatter(xi, yi, zi, c=data1.flatten(), alpha=0.1, vmax=np.nanmax(data1), vmin=np.nanmin(data1))
         plt.colorbar(im)                                # Define the colorbar in the scatter plot
         ax.set_xlim(left=init, right=x_actual)          # Define the X limit for the plot
         ax.set_ylim(top=y_actual, bottom=init)          # Define the Y limit for the plot
@@ -407,7 +408,8 @@ class threeD_plot(tk.Frame):
         ax.set_xlabel('X(nm)', fontsize=15)             # Define the X label for the plot
         ax.set_ylabel('Y(nm)', fontsize=15)             # Define the Y label for the plot
         ax.set_zlabel('Z(nm)', fontsize=15)             # Define the Z label for the plot
-        ax.set_title('3D Plot for _' + str(Z_direction) + '_' + str(valu) + ' of the AFM data', fontsize=20, y=1.05)  # Define the title for the plot
+        # Define the title for the plot
+        ax.set_title('3D Plot for _' + str(Z_direction) + '_' + str(valu) + ' of the AFM data', fontsize=20, y=1.05)
 
         canvas = FigureCanvasTkAgg(fig, self)           # Define the display figure in the window
         canvas.show()
