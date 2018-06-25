@@ -22,8 +22,11 @@ In  order to help users interact with AFM data  through graphical icons and visu
 3DdataDiver has four main functions:
 
 (1)Data Cleaning 
+
 (2)Visualization of the approach or retract dataset.  3DdataDiver is flexible enough to handle datasets of different sizes. 
+
 (3)Slicing the dataset in x plane, y plane, or z plane.  Users can select any layer of interest to see plots in 2D and 3D  cartesian coordinate systems. For the z-slicing the phase shift (or amplitude, etc) of the a selected point is displayed along with the corresponding coordinates.
+
 (4)Exporting of .h5 files generated in any of the aforementioned steps.  This allows users to users to perform their own manipulations on cleaned data and/or sliced data.
 
 # Modules required
