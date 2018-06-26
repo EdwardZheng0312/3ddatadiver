@@ -17,16 +17,9 @@ run.
 	* View full data set or slices in XY, XZ, or YZ planes.  Sliced data can be quickly viewed in 2D or 3D rendings.  Animation
 	option availible in the 3D renderings. Supported by threeD_plot, twoD_slicing, and  animation components.   
 # Installation
-__Method 1:__ 
-
 git clone https://github.com/EdwardZheng0312/VisualanalysisAFM  <br />
 cd VisualanalysisAFM <br /> 
-python setup.py install
-
-__Method 2:__
-
-git clone https://github.com/EdwardZheng0312/VisualanalysisAFM <br />
-cd VisualanalysisAFM  <br />
+python setup.py install <br />
 double click Tkinter_GUI.exe
 
 # GUI design
