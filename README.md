@@ -19,14 +19,14 @@ run.
 # Installation
 __Method 1:__ 
 
-git clone https://github.com/EdwardZheng0312/VisualanalysisAFM
-cd VisualanalysisAFM
+git clone https://github.com/EdwardZheng0312/VisualanalysisAFM \n
+cd VisualanalysisAFM \n
 python setup.py install
 
 __Method 2:__
 
-git clone https://github.com/EdwardZheng0312/VisualanalysisAFM
-cd VisualanalysisAFM
+git clone https://github.com/EdwardZheng0312/VisualanalysisAFM \n
+cd VisualanalysisAFM \n
 double click Tkinter_GUI.exe
 
 # GUI design
