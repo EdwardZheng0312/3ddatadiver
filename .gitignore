@@ -1,0 +1,10 @@
+*.pyc
+*~
+*.DS_Store
+.cache/*
+build/*
+*/__pycache__/*
+
+dist/*
+*/.ipynb_checkpoints/
+.pytest_cache/
