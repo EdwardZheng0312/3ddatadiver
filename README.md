@@ -16,6 +16,22 @@ run.
 2. Visualize 3D AFM data
 	* View full data set or slices in XY, XZ, or YZ planes.  Sliced data can be quickly viewed in 2D or 3D rendings.  Animation
 	option availible in the 3D renderings. Supported by threeD_plot, twoD_slicing, and  animation components.   
+# Installation
+Method 1: 
+
+git clone https://github.com/EdwardZheng0312/VisualanalysisAFM
+
+cd VisualanalysisAFM
+
+python setup.py install
+
+Method 2:
+
+git clone https://github.com/EdwardZheng0312/VisualanalysisAFM
+
+cd VisualanalysisAFM
+
+double click Tkinter_GUI.exe
 
 # GUI design
 In  order to help users interact with AFM data  through graphical icons and visual indicators instead of complicated code, we build a graphical user interface (GUI) by Tkinter.
