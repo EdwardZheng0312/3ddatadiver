@@ -6,8 +6,8 @@ from setuptools import setup, find_packages
 #with open(ver_file) as f:
 #    exec(f.read())
 
-NAME = "3DdataDiver"
-DESCRIPTION = "AFM 3D_data_Diver"
+NAME = "3ddatadiver"
+DESCRIPTION = "AFM 3d_data_diver"
 AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
 AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
 URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
