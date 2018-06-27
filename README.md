@@ -41,19 +41,13 @@ In  order to help users interact with AFM data  through graphical icons and visu
 </p>
 
 # Dependencies
-*h5py
-
-*itertools
-
-*matplotlib
-
-*os
-
-*numpy
-
-*pandas
-
-*tkinter
+· h5py<br />
+· itertools<br />
+· matplotlib<br />
+· os<br />
+· numpy<br />
+· pandas<br />
+· tkinter<br />
 
 # Poster
 <p align="center">
