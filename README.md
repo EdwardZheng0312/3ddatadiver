@@ -16,6 +16,7 @@ run.
 2. Visualize 3D AFM data
 	* View full data set or slices in XY, XZ, or YZ planes.  Sliced data can be quickly viewed in 2D or 3D rendings.  Animation
 	option availible in the 3D renderings. Supported by threeD_plot, twoD_slicing, and  animation components.   
+	
 # Installation
 git clone https://github.com/EdwardZheng0312/VisualanalysisAFM  <br />
 cd VisualanalysisAFM <br /> 
@@ -39,7 +40,7 @@ In  order to help users interact with AFM data  through graphical icons and visu
 <img src="https://github.com/EdwardZheng0312/3d-data-dive/blob/master/doc/GUI.PNG">
 </p>
 
-# Modules required
+# Dependencies
 *h5py
 
 *itertools
