@@ -56,8 +56,12 @@ In  order to help users interact with AFM data  through graphical icons and visu
 *tkinter
 
 # Poster
+<p align="center">
+<img src="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.png">
+</p>
+
 <object data="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.pdf" type="application/pdf" width="700px" height="700px">
     <embed src="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.pdf">Download PDF</a>.</p>
+        <p>This browser does not support PDFs. To download the PDF, please view it: <a href="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.pdf">Download PDF</a>.</p>
     </embed>
 </object>
