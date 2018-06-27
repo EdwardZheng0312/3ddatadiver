@@ -114,18 +114,18 @@ class data_cleaning(tk.Frame):
 
         print(Phase[3,3,3]) = 106.05377
         """
-        global Zsnsr_threeD_array
-        global threeD_array
-        threeD_array = np.array(FFM[valu])
-        if len(threeD_array[:, 1, 1]) < len(threeD_array[1, 1, :]):
-            threeD_array = threeD_array.transpose(2, 0, 1)
-            threeD_array = np.flipud(threeD_array)
 
-        Zsnsr_threeD_array = np.array(Zsnsr)
-        if len(Zsnsr_threeD_array[:, 1, 1]) < len(Zsnsr_threeD_array[1, 1, :]):
-            Zsnsr_threeD_array = Zsnsr_threeD_array.transpose(2, 0, 1)
-            #Zsnsr_threeD_array = np.flipud(Zsnsr_threeD_array)
+        temp = np.array(FFM[valu])
+        temp = np.transpose(temp)
+        threeD_array = np.reshape(temp, (len(temp[:, 1, 1]), len(temp[1, :, 1]), len(temp[1, 1, :])), order="F")
+
+        Zsnsr_temp = np.array(Zsnsr)
+        Zsnsr_temp = np.transpose(Zsnsr_temp)
+        Zsnsr_threeD_array = np.reshape(Zsnsr_temp, (len(Zsnsr_temp[:, 1, 1]),
+                                                     len(Zsnsr_temp[1, :, 1]), len(Zsnsr_temp[1, 1, :])), order="F")
         return threeD_array, Zsnsr_threeD_array
+
+
 
     def correct_slope(self, Zsnsr_threeD_array):
         """Function that corrects for sample tilt and generates arrays used in the bin_array
@@ -152,7 +152,7 @@ class data_cleaning(tk.Frame):
         # with the index of the min z values for use in correct_Zsnsr()
         for j in range(len(Zsnsr_threeD_array[1, :, 1])):
             for i in range(len(Zsnsr_threeD_array[1, 1, :])):
-                array_min[i, j] = (np.min(Zsnsr_threeD_array[:, i, j]))
+                array_min[j, i] = (np.min(Zsnsr_threeD_array[:, i, j]))
                 indZ[i, j] = np.min(np.where(Zsnsr_threeD_array[:, i, j] == np.min(Zsnsr_threeD_array[:, i, j])))
 
         # Find the difference between the max and mean values in the z-direction for
