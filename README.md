@@ -34,6 +34,11 @@ In  order to help users interact with AFM data  through graphical icons and visu
 
 (4)Exporting of .h5 files generated in any of the aforementioned steps.  This allows users to users to perform their own manipulations on cleaned data and/or sliced data.
 
+## GUI interface
+<p align="center">
+<img src="https://github.com/EdwardZheng0312/3d-data-dive/blob/master/doc/GUI.PNG">
+</p>
+
 # Modules required
 *h5py
 
