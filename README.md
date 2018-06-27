@@ -37,7 +37,7 @@ In  order to help users interact with AFM data  through graphical icons and visu
 
 ## GUI interface
 <p align="center">
-<img src="https://github.com/EdwardZheng0312/3d-data-dive/blob/master/doc/GUI.PNG">
+<img src="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/GUI.PNG">
 </p>
 
 # Dependencies
@@ -54,3 +54,8 @@ In  order to help users interact with AFM data  through graphical icons and visu
 *pandas
 
 *tkinter
+
+# Poster
+<p align="center">
+<img src="https://github.com/EdwardZheng0312/3ddatadiver/blob/master/doc/3DdataDiver_poster.pdf">
+</p>
