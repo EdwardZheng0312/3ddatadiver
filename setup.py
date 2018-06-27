@@ -1,17 +1,11 @@
-#import os
 from setuptools import setup, find_packages
 
-# Get version and release info, which is all stored in 3DdataDiver/version.py
-#ver_file = os.path.join('3DdataDriver', 'version.py')
-#with open(ver_file) as f:
-#    exec(f.read())
 
 NAME = "3ddatadiver"
 DESCRIPTION = "AFM 3d_data_diver"
 AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
 AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
 URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
-#VERSION = __import__(PACKAGE).__version__
 VERSION="0.10"
 
 setup(
@@ -24,9 +18,7 @@ setup(
     license="BSD",
     url=URL,
     packages=find_packages(exclude=["tests.*", "tests"]),
-    #package_data=find_package_data(
-	#		PACKAGE,
-	#		only_in_packages=False),
+   
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
