@@ -6,12 +6,12 @@ ver_file = os.path.join('3ddatadiver', 'version.py')
 with open(ver_file) as f:
     exec(f.read())
 
-NAME = "3ddatadiver"
-DESCRIPTION = "AFM 3d_data_diver"
-AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
-AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
-URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
-VERSION = "0.10"
+#NAME = "3ddatadiver"
+#DESCRIPTION = "AFM 3d_data_diver"
+#AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
+#AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
+#URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
+#VERSION = "0.10"
 #PACKAGES = "3ddatadiver"
 opts = dict(name=NAME,
             maintainer=MAINTAINER,
