@@ -1,5 +1,5 @@
 # 3ddatadiver
-
+[![Build Status](https://travis-ci.org/travis-ci/travis-web.svg?branch=master)](https://travis-ci.org/travis-ci/travis-web)
 <p align="center">
 <img src="https://raw.githubusercontent.com/EdwardZheng0312/VisualanalysisAFM/master/doc/deep-diver.png" width="165" height="229">
 </p>
