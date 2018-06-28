@@ -18,6 +18,7 @@ setup(
     license="BSD",
     url=URL,
     packages=find_packages(exclude=["tests.*", "tests"]),
+    py_modules=['3DdataDiver']
    
     classifiers=[
         "Development Status :: 3 - Alpha",
