@@ -14,8 +14,8 @@ URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
 VERSION = "0.10"
 #PACKAGES = "3ddatadiver"
 opts = dict(name=NAME,
-            maintainer=MAINTAINER,
-            maintainer_email=MAINTAINER_EMAIL,
+            #maintainer=MAINTAINER,
+            #maintainer_email=MAINTAINER_EMAIL,
             description=DESCRIPTION,
             long_description=LONG_DESCRIPTION,
             url=URL,
