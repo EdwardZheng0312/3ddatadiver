@@ -102,7 +102,8 @@ class data_cleaning(tk.Frame):
                linearized, reduced_array_approach, reduced_array_retract
 
     def generatearray(self, valu):
-        """Function to pull single dataset from FFM object and initial formatting.  load_h5 function
+        """Function to pull single dataset from FFM object and perform initial formatting.  The .h5 file must be opened,
+        with the FFM group pulled out and the Zsnsr array generated before this function can be ran.
         must be run prior to generate_array.
 
         :param target: Name of single dataset given in list keys generated from load_h5 function.
@@ -116,7 +117,8 @@ class data_cleaning(tk.Frame):
 
         print(Phase[3,3,3]) = 106.05377
         """
-
+        #  Code is built for Fortran (column-major) formatted arrays and .h5 files/numpy default to row-major arrays.
+        #  We need to transpose the data and then convert it to Fortran indexing (order = "F" command).
         temp = np.array(FFM[valu])
         temp = np.transpose(temp)
         threeD_array = np.reshape(temp, (len(temp[:, 1, 1]), len(temp[1, :, 1]), len(temp[1, 1, :])), order="F")
@@ -125,6 +127,14 @@ class data_cleaning(tk.Frame):
         Zsnsr_temp = np.transpose(Zsnsr_temp)
         Zsnsr_threeD_array = np.reshape(Zsnsr_temp, (len(Zsnsr_temp[:, 1, 1]),
                                                      len(Zsnsr_temp[1, :, 1]), len(Zsnsr_temp[1, 1, :])), order="F")
+        assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                            Needs to be column-major indexing."
+        assert np.isfortran(Zsnsr_threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                            Needs to be column-major indexing."
+        assert len(threeD_array[1, 1, :]) == len(threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+                                                            dimensions of input array."
+        assert len(Zsnsr_threeD_array[1, 1, :]) == len(Zsnsr_threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+                                                            dimensions of input array."
         return threeD_array, Zsnsr_threeD_array
 
 
@@ -145,6 +155,10 @@ class data_cleaning(tk.Frame):
         ZSNSRtotCORR, indZ, driftx, drifty = correct_slope(zsensor)"""
         global arraytotcorr
         global indZ
+
+        assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                        Needs to be column-major indexing."
+
         # Convert matrix from meters to nanometers.
         Zsnsr_threeD_array = np.multiply(Zsnsr_threeD_array, -1000000000)
         # We have create an numpy array of the correct shape to populate.
@@ -169,21 +183,26 @@ class data_cleaning(tk.Frame):
             for i in range(len(Zsnsr_threeD_array[1, 1, :])):
                 drifty[j] = np.mean(array_min[j, :])
                 driftx[i] = np.mean(corrected_array[:, i])
-                corrected_array[j, :] = array_min[j, :] - drifty[j]
-                corrected_array[:, i] = corrected_array[:, i] - driftx[i]
+
 
         # Apply corrected slope to each level of 3D numpy array
         arraytotcorr = np.empty_like(Zsnsr_threeD_array)
         for j in range(len(Zsnsr_threeD_array[1, :, 1])):
             for i in range(len(Zsnsr_threeD_array[1, 1, :])):
                 arraytotcorr[:, i, j] = Zsnsr_threeD_array[:, i, j] - driftx[i] - drifty[j]
+
+        assert (all((len(arraytotcorr)/2-200) <= value <= (len(arraytotcorr)/2+200) for value in indZ[1, :])) == True, \
+            "Max extension in wrong location, check input array."
+        assert (all((len(arraytotcorr)/2-200) <= value <= (len(arraytotcorr)/2+200) for value in indZ[:, 1])) == True, \
+            "Max extension in wrong location, check input array."
+
         return arraytotcorr, indZ
 
     def bin_array(self, arraytotcorr, indZ, threeD_array):
         """
-        Function to reduce the size of large datasets.  Data placed into equidistant bins for each x,y coordinate and new
-        vector created from the mean of each bin.  Size of equidistant bins determined by 0.01 nm increments of Zsensor
-        data.
+        Function to reduce the size of large datasets.  Data placed into equidistant bins for each x,y coordinate and
+        new vector created from the mean of each bin.  Size of equidistant bins determined by 0.01 nm increments of
+        Zsensor data.
         :param arraytotcorr: Zsensor data corrected for sample tilt using correct_slope function.  Important to use this
          and not raw Zsensor data so as to get an accurate Zmax value.
         :param indZ: Index of Zmax for each x,y coordinate to cut data set into approach and retract.
@@ -195,6 +214,10 @@ class data_cleaning(tk.Frame):
         global reduced_array_approach
         global reduced_array_retract
         global linearized
+
+        assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                        Needs to be column-major indexing."
+
         arraymean = np.zeros(len(arraytotcorr[:, 1, 1]))
         digitized = np.empty_like(arraymean)
         # Create list of the mean Zsensor value for each horizontal slice of Zsensor array.
@@ -206,23 +229,25 @@ class data_cleaning(tk.Frame):
         reduced_array_approach = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
         reduced_array_retract = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
-        # Generate new arrays from the means of each bin.
+        # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
         for j in range(len(arraytotcorr[1, :, 1])):
             for i in range(len(arraytotcorr[1, 1, :])):
                 z = arraytotcorr[:(int(indZ[i, j])), i, j]  # Create dataset with just retract data
-                digitized = np.digitize(z, linearized)
+                digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
                 for n in range(len(linearized)):
-                    ind = list(np.where(digitized == n)[0])
-                    reduced_array_approach[n, i, j] = np.mean(threeD_array[ind, i, j])
+                    ind = list(np.where(digitized == n)[0])  # Find which indices belong to which bins
+                    reduced_array_approach[n, i, j] = np.mean(threeD_array[ind, i, j])  # Find the mean of the bins and
+                                                                                    # populate new array.
 
         for j in range(len(arraytotcorr[1, :, 1])):
             for i in range(len(arraytotcorr[1, 1, :])):
                 z = arraytotcorr[-(int(indZ[i, j])):, i, j]  # Create dataset with just approach data.
-                z = np.flipud(z)
-                digitized = np.digitize(z, linearized)
+                z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
+                digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
                 for n in range(len(linearized)):
-                    ind = list(np.where(digitized == n)[0])
-                    reduced_array_retract[n, i, j] = np.mean(threeD_array[ind, i, j])
+                    ind = list(np.where(digitized == n)[0])  # Find which indices belong to which bins
+                    reduced_array_retract[n, i, j] = np.mean(threeD_array[ind, i, j])  # Find the mean of the bins and
+                                                                                    # populate new array.
 
         return linearized, reduced_array_approach, reduced_array_retract
 

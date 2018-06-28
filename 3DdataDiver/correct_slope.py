@@ -1,3 +1,5 @@
+import numpy as np
+
 def correct_slope(threeD_array):
     """Function that corrects for sample tilt and generates arrays used in the bin_array
     function.
@@ -12,6 +14,9 @@ def correct_slope(threeD_array):
 
     Example of function calling format:
     ZSNSRtotCORR, indZ, driftx, drifty = correct_slope(zsensor)"""
+
+    assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                Needs to be column-major indexing."
 
     #Convert matrix from meters to nanometers.
     threeD_array = np.multiply(threeD_array, -1000000000)
@@ -41,12 +46,17 @@ def correct_slope(threeD_array):
         for i in range(len(threeD_array[1,1,:])):
             drifty[j] = np.mean(array_min[j, :])
             driftx[i] = np.mean(corrected_array[:, i])
-            corrected_array[j, :] = array_min[j, :] - drifty[j]
-            corrected_array[:, i] = corrected_array[:, i] - driftx[i]
 
     #Apply corrected slope to each level of 3D numpy array
     arraytotcorr = np.empty_like(threeD_array)
     for j in range(len(threeD_array[1, :, 1])):
         for i in range(len(threeD_array[1, 1, :])):
             arraytotcorr[:, i, j] = threeD_array[:, i, j] - driftx[i] - drifty[j]
+
+    assert (all((len(threeD_array)/2-200) <= value <= (len(threeD_array)/2+200) for value in indZ[1, :])) == True, \
+        "Max extension in wrong location, check input array."
+    assert (all((len(threeD_array)/2-200) <= value <= (len(threeD_array)/2+200) for value in indZ[:, 1])) == True, \
+        "Max extension in wrong location, check input array."
+
+
     return arraytotcorr, indZ

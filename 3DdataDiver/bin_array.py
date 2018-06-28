@@ -1,3 +1,5 @@
+import numpy as np
+
 def bin_array(arraytotcorr, indZ, threeD_array):
     """
     Function to reduce the size of large datasets.  Data placed into equidistant bins for each x,y coordinate and
@@ -9,6 +11,9 @@ def bin_array(arraytotcorr, indZ, threeD_array):
     :param rawarray: 3D numpy array the user wishes to reduce in size (e.g. phase, amp)
     :return: 3D numpy array of binned approach values, 3D numpy array of binned retract values.
     """
+    assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                Needs to be column-major indexing."
+
 
     # Generate empty numpy array to populate.
     global reduced_array_approach

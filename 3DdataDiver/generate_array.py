@@ -28,4 +28,13 @@ def generatearray(valu):
     Zsnsr_temp = np.transpose(Zsnsr_temp)
     Zsnsr_threeD_array = np.reshape(Zsnsr_temp, (len(Zsnsr_temp[:, 1, 1]),
                                                  len(Zsnsr_temp[1, :, 1]), len(Zsnsr_temp[1, 1, :])), order="F")
+    assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                    Needs to be column-major indexing."
+    assert np.isfortran(Zsnsr_threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+                                                    Needs to be column-major indexing."
+    assert len(threeD_array[1, 1, :]) == len(threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+                                                    dimensions of input array."
+    assert len(Zsnsr_threeD_array[1, 1, :]) == len(Zsnsr_threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+                                                    dimensions of input array."
+
     return threeD_array, Zsnsr_threeD_array
