@@ -119,21 +119,21 @@ class data_cleaning(tk.Frame):
         """
         #  Code is built for Fortran (column-major) formatted arrays and .h5 files/numpy default to row-major arrays.
         #  We need to transpose the data and then convert it to Fortran indexing (order = "F" command).
-        temp = np.array(FFM[valu])
-        temp = np.transpose(temp)
+        temp1 = np.array(FFM[valu])
+        temp = np.transpose(temp1)
         threeD_array = np.reshape(temp, (len(temp[:, 1, 1]), len(temp[1, :, 1]), len(temp[1, 1, :])), order="F")
 
-        Zsnsr_temp = np.array(Zsnsr)
-        Zsnsr_temp = np.transpose(Zsnsr_temp)
+        Zsnsr_temp1 = np.array(Zsnsr)
+        Zsnsr_temp = np.transpose(Zsnsr_temp1)
         Zsnsr_threeD_array = np.reshape(Zsnsr_temp, (len(Zsnsr_temp[:, 1, 1]),
                                                      len(Zsnsr_temp[1, :, 1]), len(Zsnsr_temp[1, 1, :])), order="F")
         assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
                                                             Needs to be column-major indexing."
         assert np.isfortran(Zsnsr_threeD_array) == True, "Input array not passed through generate_array fucntion.  \
                                                             Needs to be column-major indexing."
-        assert len(threeD_array[1, 1, :]) == len(threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+        assert len(temp1[1, 1, :]) == len(threeD_array[:, 1, 1]), "Transpose not properly applied, check \
                                                             dimensions of input array."
-        assert len(Zsnsr_threeD_array[1, 1, :]) == len(Zsnsr_threeD_array[:, 1, 1]), "Transpose not properly applied, check \
+        assert len(Zsnsr_temp1[1, 1, :]) == len(Zsnsr_threeD_array[:, 1, 1]), "Transpose not properly applied, check \
                                                             dimensions of input array."
         return threeD_array, Zsnsr_threeD_array
 
@@ -156,7 +156,7 @@ class data_cleaning(tk.Frame):
         global arraytotcorr
         global indZ
 
-        assert np.isfortran(threeD_array) == True, "Input array not passed through generate_array fucntion.  \
+        assert np.isfortran(Zsnsr_threeD_array) == True, "Input array not passed through generate_array fucntion.  \
                                                         Needs to be column-major indexing."
 
         # Convert matrix from meters to nanometers.
@@ -573,7 +573,7 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_2d_Xslices.tif'.format(export_filename2)  # Define the export image name
         fig1.savefig(setStr)
 
-    def twoDY_slicings(self, location_slices_pixel_y, export_filename2, x_actual, y_actual, x_size, y_size):
+    def twoDY_slicings(self, location_slices_pixel_y, export_filename2, x_actual, y_actual):
         """Plotting function for the Y direction slicing"""
         global canvas1
         global canvas2
