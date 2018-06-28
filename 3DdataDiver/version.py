@@ -1,12 +1,20 @@
+<<<<<<< HEAD
 from __future__ import absolute_import, division, print_function
 from os.path import join as pjoin
 
+=======
+>>>>>>> 92e874264d924861d5799ad7e6f6e5b046674809
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
 _version_minor = 1
 _version_micro = ''  # use '' for first of series, number for 1 and above
+<<<<<<< HEAD
 _version_extra = 'dev'
 # _version_extra = ''  # Uncomment this for full releases
+=======
+# _version_extra = 'dev'
+_version_extra = ''  # Uncomment this for full releases
+>>>>>>> 92e874264d924861d5799ad7e6f6e5b046674809
 
 # Construct full version string from these.
 _ver = [_version_major, _version_minor]
@@ -26,6 +34,7 @@ CLASSIFIERS = ["Development Status :: 3 - Alpha",
                "Topic :: Scientific/Engineering"]
 
 # Description should be a one-liner:
+<<<<<<< HEAD
 description = "temann: package for predicting Seebeck coefficients"
 # Long description will go up on the pypi page
 long_description = """
@@ -59,11 +68,30 @@ AUTHOR = "Xueqiao Zhang <xueqiaozhang@hotmail.com>" +\
          "Renlong Zheng <renloz@uw.edu>, " +\
          "Ellen Murphy <murphy89@uw.edu>"
 AUTHOR_EMAIL = ""
+=======
+description = "AFM 3D data diver"
+
+
+NAME = "3ddatadiver"
+DESCRIPTION = description
+LONG_DESCRIPTION = long_description
+URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
+DOWNLOAD_URL = ""
+LICENSE = "MIT"
+AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
+AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
+>>>>>>> 92e874264d924861d5799ad7e6f6e5b046674809
 PLATFORMS = "OS Independent"
 MAJOR = _version_major
 MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
+<<<<<<< HEAD
 PACKAGE_DATA = {'3DdataDiver': [pjoin('data', '_data', '*')],
                 '': ['*.csv']}
 REQUIRES = ["numpy", "h5py", "tkinter", "matplotlib", "os"]
+=======
+PACKAGE_DATA = {}
+REQUIRES = []
+
+>>>>>>> 92e874264d924861d5799ad7e6f6e5b046674809
