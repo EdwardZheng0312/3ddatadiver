@@ -12,7 +12,7 @@ AUTHOR = "Renlong Zheng; Ellen Murphy; Xueqiao Zhang"
 AUTHOR_EMAIL = "renloz@uw.edu; emurphy2028@gmail.com; xueqiaozhang@hotmail.com"
 URL = "https://github.com/EdwardZheng0312/VisualanalysisAFM"
 VERSION = "0.10"
-PACKAGES = "3ddatadiver"
+#PACKAGES = "3ddatadiver"
 opts = dict(name=NAME,
             maintainer=MAINTAINER,
             maintainer_email=MAINTAINER_EMAIL,
