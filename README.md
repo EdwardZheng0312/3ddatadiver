@@ -16,8 +16,10 @@ run.
 	by data_cleaning component.
 2. Visualize 3D AFM data
 	* View full data set or slices in XY, XZ, or YZ planes.  Sliced data can be quickly viewed in 2D or 3D rendings.  Animation
-	option availible in the 3D renderings. Supported by threeD_plot, twoD_slicing, and  animation components.   
-	
+	option availible using a jupyter notebook. Supported by threeD_plot, twoD_slicing, and  animation components.   
+3. Export data of current plot
+        * Option to export a .h5 file containing the data of the plot currently being viewed.  Exported dataset is saved in the same
+        directory that the GUI is being run from.	
 # Installation
 git clone https://github.com/EdwardZheng0312/VisualanalysisAFM  <br />
 cd VisualanalysisAFM <br /> 
@@ -43,7 +45,6 @@ In  order to help users interact with AFM data  through graphical icons and visu
 
 # Dependencies
 · h5py<br />
-· itertools<br />
 · matplotlib<br />
 · os<br />
 · numpy<br />
