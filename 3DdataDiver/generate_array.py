@@ -1,8 +1,10 @@
 import h5py as h5
 import numpy as np
 
-def generate_array(threeD_array):
-    """Function to pull single dataset from FFM object and initial formatting.  load_h5 function
+
+def generatearray(valu):
+    """Function to pull single dataset from FFM object and perform initial formatting.  The .h5 file must be opened,
+    with the FFM group pulled out and the Zsnsr array generated before this function can be ran.
     must be run prior to generate_array.
 
     :param target: Name of single dataset given in list keys generated from load_h5 function.
@@ -16,7 +18,14 @@ def generate_array(threeD_array):
 
     print(Phase[3,3,3]) = 106.05377
     """
-    target = np.array(FFM[threeD_array])
-    if len(threeD_array[:,1,1]) < len(threeD_array[1,1,:]):
-        threeD_array = threeD_array.transpose(2,0,1)
-    return threeD_array
+    #  Code is built for Fortran (column-major) formatted arrays and .h5 files/numpy default to row-major arrays.
+    #  We need to transpose the data and then convert it to Fortran indexing (order = "F" command).
+    temp = np.array(FFM[valu])
+    temp = np.transpose(temp)
+    threeD_array = np.reshape(temp, (len(temp[:, 1, 1]), len(temp[1, :, 1]), len(temp[1, 1, :])), order="F")
+
+    Zsnsr_temp = np.array(Zsnsr)
+    Zsnsr_temp = np.transpose(Zsnsr_temp)
+    Zsnsr_threeD_array = np.reshape(Zsnsr_temp, (len(Zsnsr_temp[:, 1, 1]),
+                                                 len(Zsnsr_temp[1, :, 1]), len(Zsnsr_temp[1, 1, :])), order="F")
+    return threeD_array, Zsnsr_threeD_array
