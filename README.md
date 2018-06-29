@@ -24,7 +24,7 @@ run.
 git clone https://github.com/EdwardZheng0312/VisualanalysisAFM  <br />
 cd VisualanalysisAFM <br /> 
 python setup.py install <br />
-double click Tkinter_GUI.exe
+double click 3ddatadiver/GUI_exe/Tkinter_GUI.exe
 
 # GUI design
 In  order to help users interact with AFM data  through graphical icons and visual indicators instead of complicated code, we build a graphical user interface (GUI) by Tkinter.
