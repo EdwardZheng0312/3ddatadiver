@@ -1,0 +1,31 @@
+import numpy as np
+import matplotlib
+from matplotlib.testing.decorators import image_comparison
+import matplotlib.pyplot as plt
+import load_data
+import create_pslist
+import Z_direction
+from mpl_toolkits.mplot3d import Axes3D
+%matplotlib inline
+
+@image_comparison(baseline_images=['22_down_Xslices.png'])
+def test_threeDX_slicings():
+    z_direction, Z_dir = Z_direction.Z_direction("PHASEdata.csv", "down")
+    a = np.linspace(0, x_actual, x_size)[22]
+    b = np.linspace(0, y_actual, y_size)
+    c = Z_dir
+    X, Z, Y = np.meshgrid(a, c, b)
+
+    As = np.array(create_pslist.create_pslist("PHASEdata.csv",48, 48))[0:len(Z_dir), 22, :].flatten()
+
+    fig = plt.figure(figsize=(11, 11))
+    ax = fig.add_subplot(111, projection='3d')
+    im = ax.scatter(X, Y, Z, c=As, s=6)
+    plt.colorbar(im)
+    ax.set_xlim(left=0, right=x_actual)
+    ax.set_ylim(bottom=0, top=y_actual)
+    ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
+    ax.set_xlabel('X(nm)', fontsize=12)
+    ax.set_ylabel('Y(nm)', fontsize=12)
+    ax.set_zlabel('Z(nm)', fontsize=12)
+    ax.set_title('3D X Slicing (X='+str(round(a,3)) + 'nm)for the Phase Shift of AFM data', fontsize=13)
