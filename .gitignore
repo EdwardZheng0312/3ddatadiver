@@ -8,5 +8,5 @@ build/*
 dist/*
 */.ipynb_checkpoints/
 .pytest_cache/
-FFM0012.h5
-FFM0012.h5 copy
+*/FFM0012.h5/*
+*/FFM0012.h5 copy/*
