@@ -45,7 +45,7 @@ setup(
     license="MIT",
     url='https://github.com/EdwardZheng0312/3ddatadiver',
     packages=PACKAGES,
-    install_requires=[certifi==2018.4.16, cycler==0.10.0, h5py==2.8.0, kiwisolver==1.0.1, matplotlib==2.2.2, numpy==1.14.5, 
+    install_requires=[certifi==2018.4.16, cycler==0.10.0, h5py==2.8.0, kiwisolver==1.0.1, matplotlib==2.2.2, numpy==1.14.5, \
                       pandas==0.23.1, pyparsing==2.2.0, python-dateutil==2.7.3, pytz==2018.4, six==1.11.0, wincertstore==0.2],
     zip_safe=False)
    
