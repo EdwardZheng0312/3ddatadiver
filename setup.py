@@ -44,9 +44,10 @@ setup(
     author_email='emurphy2028@gmail.com',
     license="MIT",
     url='https://github.com/EdwardZheng0312/3ddatadiver',
-    packages=['3ddatadiver', '3ddatadiver.test']
-    install_requires=['certifi==2018.4.16', 'cycler==0.10.0', 'h5py==2.8.0', 'kiwisolver==1.0.1', 'matplotlib==2.2.2', 'numpy==1.14.5', \
-                      'pandas==0.23.1', 'pyparsing==2.2.0', 'python-dateutil==2.7.3', 'pytz==2018.4', 'six==1.11.0', 'wincertstore==0.2'],
+    packages=['3ddatadiver', '3ddatadiver.tests'],
+    install_requires=['certifi==2018.4.16', 'cycler==0.10.0', 'h5py==2.8.0', 'kiwisolver==1.0.1', 'matplotlib==2.2.2', \
+                      'numpy==1.14.5', 'pandas==0.23.1', 'pyparsing==2.2.0', 'python-dateutil==2.7.3', 'pytz==2018.4', \
+                      'six==1.11.0', 'wincertstore==0.2'],
     zip_safe=False)
    
  #   classifiers=[
