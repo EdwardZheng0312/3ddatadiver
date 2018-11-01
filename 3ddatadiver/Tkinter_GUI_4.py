@@ -122,7 +122,7 @@ class data_cleaning(tk.Frame):
         x_size = len(Zsnsr[:,1,1])
         y_size = len(Zsnsr[1,:,1])
         return FFM, Zsnsr, valu1, valu2, valu3, export_filename0, Phase_threeD_array, Amp_threeD_array, \
-               Zsnsr_threeD_array, Darraytocorr, Zarraytotcorr, indZ, indD, Zlinearized, Dlinearized, \
+               Zsnsr_threeD_array, Darraytotcorr, Zarraytotcorr, indZ, indD, Zlinearized, Dlinearized, \
                Phase_reduced_array_approach, Amp_reduced_array_approach, Phase_reduced_array_retract, \
                Amp_reduced_array_retract, Phase_reduced_array_approach_D,  Amp_reduced_array_approach_D,\
                Phase_reduced_array_retract_D, Amp_reduced_array_retract_D
