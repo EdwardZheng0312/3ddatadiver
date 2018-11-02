@@ -610,7 +610,7 @@ class threeD_plot(tk.Frame):
         listbox.pack()
         listbox.insert(1, "Up")
         listbox.insert(2, "Down")
-        listbox.bind('<<ListboxSelect>>', self.Curselect3)
+        listbox.bind('<<ListboxSelect>>', self.Curselect4)
 
         button1 = ttk.Button(self, text="Get 3D Plot", command=lambda: self.threeDplot(Z_direction, x_actual, y_actual))
         button1.pack(pady=5, padx=5)
@@ -922,7 +922,7 @@ class twoD_slicing(tk.Frame):
         listbox.pack()
         listbox.insert(1, "Up")
         listbox.insert(2, "Down")
-        listbox.bind('<<ListboxSelect>>', self.Curselect4)
+        listbox.bind('<<ListboxSelect>>', self.Curselect5)
 
         label4 = ttk.Label(self, text="Export Filename", font="Small_Font", background='#ffffff')
         label4.pack(pady=10, padx=10)
@@ -1072,7 +1072,7 @@ class animation(tk.Frame):
         listbox.pack()
         listbox.insert(1, "Up")
         listbox.insert(2, "Down")
-        listbox.bind('<<ListboxSelect>>', self.Curselect5)
+        listbox.bind('<<ListboxSelect>>', self.Curselect6)
 
         button2 = ttk.Button(self, text="Save Animation",
                              command=lambda: self.save_Z_animation(Z_dir, x_actual, y_actual, x_size, y_size, pslist))
