@@ -107,7 +107,9 @@ class data_cleaning(tk.Frame):
         Amp_reduced_array_retract = self.bin_array(arraytotcorr, indZ, Phase_threeD_array, Amp_threeD_array)[6]
         x_size = len(Zsnsr[:,1,1])
         y_size = len(Zsnsr[1,:,1])
-        return FFM, Zsnsr, valu1, valu2, valu3, export_filename0, Phase_threeD_array, Amp_threeD_array, Zsnsr_threeD_array, arraytocorr, indZ, linearized, Phase_reduced_array_approach, Amp_reduced_array_approach, Phase_reduced_array_retract, Amp_reduced_array_retract
+        return FFM, Zsnsr, valu1, valu2, valu3, export_filename0, Phase_threeD_array, Amp_threeD_array, \
+               Zsnsr_threeD_array, arraytocorr, indZ, linearized, Phase_reduced_array_approach, \
+               Amp_reduced_array_approach, Phase_reduced_array_retract, Amp_reduced_array_retract
 
     def generatearray(self):
         """Function to pull single dataset from FFM object and perform initial formatting.  The .h5 file must be opened,
