@@ -298,30 +298,31 @@ class data_cleaning(tk.Frame):
         reduced_array_approach2 = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
         reduced_array_retract1 = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
         reduced_array_retract2 = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
+
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
         # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
+        for i, j in itertools.combinations(range(len(arraytotcorr[1, 1, :])), 2):
+            z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
+            digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
+            # Populate new array with mean of binned Z data
+            reduced_array_approach1[:, i, j] = \
+                [np.mean(rawarray1[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
+                 range(len(linearized))]
+            reduced_array_approach2[:, i, j] = \
+                [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
+                 range(len(linearized))]
 
-        for j in range(len(arraytotcorr[1, :, 1])):
-            for i in range(len(arraytotcorr[1, 1, :])):
-                z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
-                digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
-                for n in range(len(linearized)):
-                    ind_val = list(np.where(digitized == n)[0])  # Find which indices belong to which bins
-                    # Find the mean of Phase array's bins and populate new array.
-                    reduced_array_approach1[n, i, j] = np.mean(rawarray1[ind_val, i, j])
-                    reduced_array_approach2[n, i, j] = np.mean(rawarray2[ind_val, i, j])
-
-        for j in range(len(arraytotcorr[1, :, 1])):
-            for i in range(len(arraytotcorr[1, 1, :])):
-                z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
-                z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
-                digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
-                for n in range(len(linearized)):
-                    ind_val = list(np.where(digitized == n)[0])  # Find which indices belong to which bins
-
-                    # Find the mean of Phase array's bins and populate the new array.
-                    reduced_array_retract1[n, i, j] = np.mean(rawarray1[ind_val, i, j])
-                    reduced_array_retract2[n, i, j] = np.mean(rawarray2[ind_val, i, j])
+        for i, j in itertools.combinations(range(len(arraytotcorr[1, 1, :])), 2):
+            z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
+            z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
+            digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
+            # Populate new array with mean of binned Z data
+            reduced_array_retract1[:, i, j] = \
+                [np.mean(rawarray1[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
+                 range(len(linearized))]
+            reduced_array_retract2[:, i, j] = \
+                [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
+                 range(len(linearized))]
 
         #  Merge Phase and Amp array into two different reduced array, contains approach and retract movement
         reduced_array1 = np.concatenate((reduced_array_approach1, reduced_array_retract1), axis=0)
