@@ -302,9 +302,10 @@ class data_cleaning(tk.Frame):
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
         # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
 
-        for i, j in itertools.combinations(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.combinations_with_replacement(range(len(arraytotcorr[1, 1, :])), 2):
             z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
+            # Populate new array with mean of binned Z data
             reduced_array_approach1[:, i, j] = \
                 [np.mean(rawarray1[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
@@ -312,10 +313,11 @@ class data_cleaning(tk.Frame):
                 [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
 
-        for i, j in itertools.combinations(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.combinations_with_replacement(range(len(arraytotcorr[1, 1, :])), 2):
             z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
             z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
+            # Populate new array with mean of binned Z data
             reduced_array_retract1[:, i, j] = \
                 [np.mean(rawarray1[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
