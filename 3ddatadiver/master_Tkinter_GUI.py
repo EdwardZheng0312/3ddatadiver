@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import mpldatacursor
+import itertools
 import numpy as np
 import os
 import tkinter as tk
@@ -305,7 +306,7 @@ class data_cleaning(tk.Frame):
 
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
         # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
-        for i, j in itertools.combinations_with_replacement(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.product(range(len(ZSNSRtotCORR[1, 1, :])), range(len(ZSNSRtotCORR[1, :, 1]))):
             z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
             # Populate new array with mean of binned Z data
@@ -316,7 +317,7 @@ class data_cleaning(tk.Frame):
                 [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
 
-        for i, j in itertools.combinations_with_replacement(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.product(range(len(ZSNSRtotCORR[1, 1, :])), range(len(ZSNSRtotCORR[1, :, 1]))):
             z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
             z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
@@ -844,7 +845,8 @@ class twoD_slicing(tk.Frame):
         if location_slices_pixel_z in range (len(Z_dir) + 2):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Z is between 0 to " + str(np.array(Z_dir).max()) + ".")
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Z is between 0 to " +
+                                        str(np.array(Z_dir).max()) + ".")
 
         phaseshift = (self.create_pslist(Z_direction))[location_slices_pixel_z]
 
@@ -1067,7 +1069,8 @@ class animation_cool(tk.Frame):
         if x_num_slice in range(x_size):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error","Out of range, The expected range for x_num_slice is between 0 to " + str(len(x_size)) + ".")
+            tkMessageBox.askretrycancel("Input Error","Out of range, The expected range for x_num_slice is between 0 to"
+                                        + str(len(x_size)) + ".")
         if y_num_slice in range(y_size):
             pass
         else:
@@ -1088,7 +1091,8 @@ class animation_cool(tk.Frame):
         zanirange = float(z_ani_range.get())
         return zanirange
 
-    def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):  # x_num_slice, y_num_slice, z_num_slice
+    def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):
+        # x_num_slice, y_num_slice, z_num_slice
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim(left=init, right=x_actual)
@@ -1098,7 +1102,7 @@ class animation_cool(tk.Frame):
         ax.set_ylabel('Y(nm)', fontsize=12)
         ax.set_zlabel('Z(nm)', fontsize=12)
         ax.set_title('ZYX Slicing Animation for the ' + str(valu) + ' of AFM data', fontsize=18)
-        # ----------------------------------------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------------------------------------
         ims = []
         for add in range(z_num_slice):  # z_num_slice is the number of Z slices
             # ax.set_zlim(top=zanirange, bottom=Z_dir.min())
@@ -1107,16 +1111,18 @@ class animation_cool(tk.Frame):
             c = Z_dir[
                 (int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add)]  # get every page of Z_dir
             x, z, y = np.meshgrid(a, c, b)
-            k = np.array(self.create_pslist(Z_direction))[(int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add), :, :]
+            k = np.array(self.create_pslist(Z_direction))
+            [(int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add), :, :]
             print(k)
-            ims.append((ax.scatter(x, y, z, c=k.flatten(), s=6) ,))  # ----------------------------------------------------- Z slice
+            ims.append((ax.scatter(x, y, z, c=k.flatten(), s=6) ,))  # Z slice
         for add in range(y_num_slice):
             # ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
             a = np.linspace(init, x_actual, x_size)
             b = np.linspace(init, y_actual, 64)[int(64 // y_num_slice) * add]
             c = Z_dir[: int(float(zanirange / Z_dir.max()) * len(Z_dir))]
             x, z, y = np.meshgrid(a, c, b)
-            m = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), :, int(64 // y_num_slice) * add]
+            m = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), :,
+                int(64 // y_num_slice) * add]
             ims.append((ax.scatter(x, y, z, c=m.flatten(), s=6),))  # ---------------------------- Y slice
         for add in np.arange(x_num_slice):
             # ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
@@ -1124,7 +1130,8 @@ class animation_cool(tk.Frame):
             b = np.linspace(init, y_actual, 64)
             c = Z_dir[: int(float(zanirange / Z_dir.max()) * len(Z_dir))]
             x, z, y = np.meshgrid(a, c, b)
-            n = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), int(x_size // x_num_slice) * add, init:y_size]
+            n = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)),
+                int(x_size // x_num_slice) * add, init:y_size]
             ims.append((ax.scatter(x, y, z, c=n.flatten(), s=6),))  # ---------------------------  X slice
         im_ani = matplotlib.animation.ArtistAnimation(fig, ims, interval=12000, blit=True)
 
@@ -1210,7 +1217,7 @@ class tutorial(ttk.Frame):
 
         label3 = ttk.Label(self, text='Step 1: Data Cleaning', font=Small_Font, background='#ffffff')
         label3.place(x=595, y=75)
-        label4 = ttk.Label(self, text='\t''X Dift Switch & Export Cleaned HDF5 File', font=Small_Font, background='#ffffff')
+        label4 = ttk.Label(self, text='\t''X Drift Switch & Export Cleaned HDF5 File', font=Small_Font, background='#ffffff')
         label4.place(x=595, y=120)
         label5 = ttk.Label(self, text='Step 2: Input the Dataset Information for Visualization', font=Small_Font,background='#ffffff')
         label5.place(x=595, y=165)
