@@ -40,7 +40,8 @@ class Sea(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver','taiji.png')))  # Set up the iconphoto for our software
+        self.tk.call('wm', 'iconphoto', self._w,
+                     PhotoImage(file=os.path.join('/Users/Ellen_M/Desktop/AFM_Analysis/3ddatadiver/3ddatadiver','taiji.png')))  # Set up the iconphoto for our software
         tk.Tk.wm_title(self, "3ddatadiver")  # Set up the name of our software
         self.state('zoomed')  # Set up the inital window operation size
 
@@ -306,7 +307,7 @@ class data_cleaning(tk.Frame):
 
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
         # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
-        for i, j in itertools.product(range(len(ZSNSRtotCORR[1, 1, :])), range(len(ZSNSRtotCORR[1, :, 1]))):
+        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), range(len(arraytotcorr[1, :, 1]))):
             z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
             # Populate new array with mean of binned Z data
@@ -317,7 +318,7 @@ class data_cleaning(tk.Frame):
                 [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
 
-        for i, j in itertools.product(range(len(ZSNSRtotCORR[1, 1, :])), range(len(ZSNSRtotCORR[1, :, 1]))):
+        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), range(len(arraytotcorr[1, :, 1]))):
             z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
             z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
@@ -335,7 +336,8 @@ class data_cleaning(tk.Frame):
         return linearized, reduced_array1, reduced_array_approach1, reduced_array_retract1, reduced_array2, \
                reduced_array_approach2, reduced_array_retract2
 
-    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, Dcorrected_array, Dlinearized, export_filename0, CROP):
+    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, Dcorrected_array,
+                            Dlinearized, export_filename0, CROP):
         global xSIZE
         global ySIZE
         global zSIZE
@@ -474,7 +476,8 @@ class load_data(tk.Frame):
         valu0 = widget.get(select[0])    # Return the selection from the GUI objectives
         return valu0
 
-    def get_data(self, Xnm, Ynm, Phase_reduced_array_retract, Phase_reduced_array_approach, Amp_reduced_array_approach, Amp_reduced_array_retract):
+    def get_data(self, Xnm, Ynm, Phase_reduced_array_retract, Phase_reduced_array_approach,
+                 Amp_reduced_array_approach, Amp_reduced_array_retract):
         """The function to return the inputs to the GUI functions"""
         global linearized
         global x_actual
@@ -538,7 +541,9 @@ class load_data(tk.Frame):
         listbox2.insert(2, 'Drive')
         listbox2.bind('<<ListboxSelect>>', self.Curselect3)
 
-        button0 = tk.Button(self, text="Apply Parameters", bg='white', command=lambda: self.get_data(Xnm, Ynm, Phase_reduced_array_retract, Phase_reduced_array_approach, Amp_reduced_array_retract, Amp_reduced_array_approach))
+        button0 = tk.Button(self, text="Apply Parameters", bg='white', command=lambda:
+        self.get_data(Xnm, Ynm, Phase_reduced_array_retract, Phase_reduced_array_approach,
+                      Amp_reduced_array_retract, Amp_reduced_array_approach))
         button0.pack(pady=5, padx=5)
         button0.config(width=15)
 
@@ -546,11 +551,13 @@ class load_data(tk.Frame):
         button1.pack(pady=5, padx=5)
         button1.config(width=15)
 
-        button2 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda: controller.show_frame(twoD_slicing))
+        button2 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda:
+        controller.show_frame(twoD_slicing))
         button2.pack(pady=5, padx=5)
         button2.config(width=15)
 
-        button3 = tk.Button(self, text="2D Slicing Animation", bg='white', command=lambda: controller.show_frame(animation_cool))
+        button3 = tk.Button(self, text="2D Slicing Animation", bg='white', command=lambda:
+        controller.show_frame(animation_cool))
         button3.pack(pady=5, padx=5)
 
         button4 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
@@ -575,40 +582,58 @@ class threeD_plot(tk.Frame):
     def threeDplot(self, Z_direction, x_actual, y_actual):
         """3D plot function"""
         global canvas
-        if Z_direction == "Up":                         # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        if Z_direction == "Up":  # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = np.flip(linearized, axis=0)
             data1 = reduced_array_retract
-        else:                                           # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        else:  # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
             Z_dir = linearized
             data1 = reduced_array_approach
 
         data1[np.isnan(data1)] = np.nanmin(data1)  # Replace NaN with min value of array.
 
-        x = np.linspace(init, x_actual, len(data1[1, :, 1]))         # Define the plotting valuable x
-        y = np.linspace(init, y_actual, len(data1[1, 1, :]))         # Define the plotting valuable y
-        z = np.linspace(init, Z_dir.max(), len(data1[:, 1, 1]))      # Define the plotting valuable z
+        fig = plt.figure(figsize=(11, 9), facecolor='white')  # Define the figure to make a plot
+        ax = fig.add_subplot(111, projection='3d')  # Define the 3d plot
 
-        xi,zi,yi = np.meshgrid(x,z,y)
+        x = np.linspace(init, x_actual, len(data1[1, :, 1]))  # Define the plotting valuable x
+        y = np.linspace(init, y_actual, len(data1[1, 1, :]))  # Define the plotting valuable y
+        z = np.linspace(init, Z_dir.max(), len(data1[:, 1, 1]))  # Define the plotting valuable z
+        X, Y = np.meshgrid(x, y)
+        X1, Y1 = np.meshgrid(z, x)
+        X2, Y2 = np.meshgrid(y, z)
 
-        fig = plt.figure(figsize=(11, 9), facecolor='white')       #Define the figure to make a plot
-        ax = fig.add_subplot(111, projection='3d')                 #Define the 3d plot
-        # Define the scatter plot
-        im = ax.scatter(xi, yi, zi, c=data1.flatten(), vmax=np.nanmax(data1), vmin=np.nanmin(data1))
-        plt.colorbar(im)                                           # Define the colorbar in the scatter plot
-        ax.set_xlim(left=init, right=x_actual)                     # Define the X limit for the plot
-        ax.set_ylim(top=y_actual, bottom=init)                     # Define the Y limit for the plot
-        ax.set_zlim(top=np.nanmax(Z_dir), bottom=init)             # Define the Z limit for the plot
-        ax.set_xlabel('X(nm)', fontsize=15)                        # Define the X label for the plot
-        ax.set_ylabel('Y(nm)', fontsize=15)                        # Define the Y label for the plot
-        ax.set_zlabel('Z(nm)', fontsize=15)                        # Define the Z label for the plot
+        Z = data1[-1, :, :]
+        Z1 = np.rot90(data1[:, :, 0], axes=(-2, -1))
+        Z2 = data1[:, 0, :]
+
+        cset = [[], [], []]
+
+        # this is the example that worked for you:
+        cset[0] = ax.contourf(X, Y, Z, zdir='z', offset=Z_dir.max(),
+                              levels=range(int(np.nanmin(data1)), int(np.nanmax(data1))))
+
+        # now, for the x-constant face, assign the contour to the x-plot-variable:
+        cset[1] = ax.contourf(Z1, Y1, X1, zdir='x', offset=x_actual,
+                              levels=range(int(np.nanmin(data1)), int(np.nanmax(data1))))
+
+        # likewise, for the y-constant face, assign the contour to the y-plot-variable:
+        cset[2] = ax.contourf(X2, Z2, Y2, zdir='y', offset=0,
+                              levels=range(int(np.nanmin(data1)), int(np.nanmax(data1))))
+
+        plt.colorbar(cset[0])  # Add colorbar to plot
+        ax.set_xlim(left=init, right=x_actual)  # Define the X limit for the plot
+        ax.set_ylim(top=y_actual, bottom=init)  # Define the Y limit for the plot
+        ax.set_zlim(top=np.nanmax(Z_dir), bottom=init)  # Define the Z limit for the plot
+        ax.set_xlabel('X(nm)', fontsize=15)  # Define the X label for the plot
+        ax.set_ylabel('Y(nm)', fontsize=15)  # Define the Y label for the plot
+        ax.set_zlabel('Z(nm)', fontsize=15)  # Define the Z label for the plot
         # Define the title for the plot
         ax.set_title('3D Plot for _' + str(Z_direction) + '_' + str(valu) + ' of the AFM data', fontsize=20, y=1.05)
 
-        canvas = FigureCanvasTkAgg(fig, self)                      # Define the display figure in the window
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP)                   # Define the display region in GUI
+        canvas = FigureCanvasTkAgg(fig, self)  # Define the display figure in the window
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.TOP)  # Define the display region in GUI
 
-        fig.savefig("3D Plot_" + str(Z_direction)+ str(valu) + ".png")  # Save the export figure as png file
+        fig.savefig("3D Plot_" + str(Z_direction) + str(valu) + ".tif")  # Save the export figure as tif file
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -1111,8 +1136,8 @@ class animation_cool(tk.Frame):
             c = Z_dir[
                 (int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add)]  # get every page of Z_dir
             x, z, y = np.meshgrid(a, c, b)
-            k = np.array(self.create_pslist(Z_direction))
-            [(int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add), :, :]
+            k = np.array(self.create_pslist(Z_direction)
+                         [(int(float(zanirange / Z_dir.max()) * len(Z_dir) // z_num_slice) * add), :, :])
             print(k)
             ims.append((ax.scatter(x, y, z, c=k.flatten(), s=6) ,))  # Z slice
         for add in range(y_num_slice):
@@ -1259,8 +1284,8 @@ class acknowledge(tk.Frame):
                             background='#ffffff', font='Small_Font')
         label_1.pack()
 
-        photo1 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "PNNL.png"))
-        photo2 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "UWDIRECT.png"))
+        photo1 = PhotoImage(file=os.path.join('/Users/Ellen_M/Desktop/AFM_Analysis/3ddatadiver/3ddatadiver', "PNNL.png"))
+        photo2 = PhotoImage(file=os.path.join('/Users/Ellen_M/Desktop/AFM_Analysis/3ddatadiver/3ddatadiver', "UWDIRECT.png"))
         img1 = tk.Label(self, image=photo1, background='#ffffff')
         img2 = tk.Label(self, image=photo2, background='#ffffff')
         img1.image = photo1
