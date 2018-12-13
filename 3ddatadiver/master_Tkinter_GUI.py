@@ -1196,11 +1196,14 @@ class twoD_slicing(tk.Frame):
 
 class animation_cool(tk.Frame):
     '''
-    Users input the number of X, Y and Z slices, respectively. Next users input the range of Z(1nm-4nm).
-    Then we obtain the number.
-    Plot Z, Y and X slices animation.
+    Users input the range of Z(1nm-4nm), and choose the direction of the data (approach or retract).
+    Plot and save Z, Y and X slices animation.
     '''
     def Curselect7(self, event):
+        '''
+        According to the cantilever direction users choose, make sure the z coordinate data and range.
+        :return: Z_dir, Z_direction (z axis and the cantilever direction)
+        '''
         global Z_direction
         global Z_dir
         widget = event.widget
@@ -1223,11 +1226,26 @@ class animation_cool(tk.Frame):
         return pslist
 
     def get_ani_range(self, z_ani_range):  # x&y: user should choose from 0.5-2.0nm; z: user should choose from 1.0-4.0
+        '''
+        Get the value that users input the range of Z coordinate.
+        :param z_ani_range: the range of Z coordinate that they want to see
+        :return: zanirange
+        '''
         global zanirange
         zanirange = float(z_ani_range.get())
         return zanirange
 
     def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):  # x_num_slice, y_num_slice, z_num_slice
+        '''
+        After geting all the information, the animation will be saved as .gif file.
+         :param Z_dir: the z coordinate data (nm)
+        :param x_actual: the range of x coordinate (nm)
+        :param y_actual: the range of y coordinate (nm)
+        :param x_size: the number of x data
+        :param y_size: the number of y data
+        :param zanirange: the range of Z coordinate that users want to see
+        :return:
+        '''
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim(left=init, right=x_actual)
@@ -1270,13 +1288,19 @@ class animation_cool(tk.Frame):
         return
 
     def clear(self):
+        '''
+        clear all the users' input information
+        :return:
+        '''
         z_ani_range.delete(0, END)
 
     def __init__(self, parent, controller):
+        '''
+        Add and connect all the buttons and textboxs
+        :param parent:
+        :param controller:
+        '''
         global z_ani_range
-        global x_numslices
-        global y_numslices
-        global z_numslices
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
         label1 = ttk.Label(self, text="Step 6: 2D Slicing Animation", font=Huge_Font, background='#ffffff')
@@ -1320,6 +1344,7 @@ class animation_cool(tk.Frame):
         button6 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button6.pack(pady=10, padx=10)
         button6.config(width=15)
+
 
 
 class tutorial(ttk.Frame):
