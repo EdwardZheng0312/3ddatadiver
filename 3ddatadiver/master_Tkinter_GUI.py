@@ -37,13 +37,16 @@ init = 0
 
 
 class Sea(tk.Tk):
-    """Control function for the windows translate """
+    """Control function to build the environment and rendering of the GUI. Background function, user does not
+    interact."""
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver','taiji.png')))  # Set up the iconphoto for our software
+        # Set up the iconphoto for the GUI
+        self.tk.call('wm', 'iconphoto', self._w,
+                     PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver','taiji.png')))
         tk.Tk.wm_title(self, "3ddatadiver")  # Set up the name of our software
-        self.state('zoomed')  # Set up the inital window operation size
+        self.state('zoomed')  # Set up the initial window operation size
 
         container = tk.Frame(self)  # Define the properties of the bracket of windows inside the GUI
         container.pack(side="top", fill="both", expand=True)  # Define the layout of the bracket
@@ -51,7 +54,8 @@ class Sea(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}  # Define the windows in the GUI
-        for F in (data_cleaning, load_data, Force_Curve_plot, threeD_plot, twoD_slicing, animation_cool, tutorial, acknowledge):
+        for F in (data_cleaning, load_data, Force_Curve_plot,
+                  threeD_plot, twoD_slicing, animation_cool, tutorial, acknowledge):
             frame = F(container, self)  # Call the certain window from the bracket
 
             self.frames[F] = frame  # Define each son windows in GUI
@@ -65,7 +69,9 @@ class Sea(tk.Tk):
 
 
 class data_cleaning(tk.Frame):
-    """Data Preprocessing function to clean up the input data file and export the cleaned dataset"""
+    """Data Preprocessing function to clean up the input data file and export the cleaned datasets"""
+
+    # Set up buttons.
     def Curselect1(self, event):
         global controller1
         widget = event.widget
@@ -86,7 +92,7 @@ class data_cleaning(tk.Frame):
         return fileName
 
     def get_source(self, export_filename, controller2):
-        """The function to return the inputs to the GUI functions"""
+        """This function mines the dataset to generate objects and stores them for use in the GUI."""
         global filename
         global export_filename0
         global FFM
@@ -130,24 +136,34 @@ class data_cleaning(tk.Frame):
         export_filename0 = export_filename.get()
         Zbin = float(zbinsize.get())
 
+        #  This is where the user can tell the software if the tip deflection data was collected on the input file.
         if controller2 == 'On':
             valu4 = FFM['Defl']
         else:
             valu4 = 'NaN'
 
+        # Generate arrays from h5 file.
         Phase_threeD_array, Amp_threeD_array, Drive_threeD_array, Zsnsr_threeD_array = self.generatearray()
-        Zdriftx, Zdrifty, Zcorrected_array, Zarraytotcorr, indZ, CROP = self.correct_slope(Zsnsr_threeD_array, controller1)
-        Ddriftx, Ddrifty, Dcorrected_array, Darraytotcorr, indD, CROP = self.correct_slope(Drive_threeD_array, controller1)
+
+        # Correct Slope
+        Zdriftx, Zdrifty, Zcorrected_array, Zarraytotcorr, indZ, CROP = self.correct_slope(Zsnsr_threeD_array,
+                                                                                           controller1)
+        Ddriftx, Ddrifty, Dcorrected_array, Darraytotcorr, indD, CROP = self.correct_slope(Drive_threeD_array,
+                                                                                           controller1)
+        # Bin array
         Zlinearized, Phase_reduced_array, Phase_reduced_array_approach, Phase_reduced_array_retract, Amp_reduced_array,\
-            Amp_reduced_array_approach, Amp_reduced_array_retract  = self.bin_array(Zarraytotcorr, indZ, Phase_threeD_array, Amp_threeD_array)
+            Amp_reduced_array_approach, Amp_reduced_array_retract  = \
+            self.bin_array(Zarraytotcorr, indZ, Phase_threeD_array, Amp_threeD_array)
         Dlinearized, Phase_reduced_array_D, Phase_reduced_array_approach_D, Phase_reduced_array_retract_D, \
-            Amp_reduced_array_D, Amp_reduced_array_approach_D, Amp_reduced_array_retract_D = self.bin_array(Darraytotcorr, indD, Phase_threeD_array, Amp_threeD_array)
+            Amp_reduced_array_D, Amp_reduced_array_approach_D, Amp_reduced_array_retract_D = \
+            self.bin_array(Darraytotcorr, indD, Phase_threeD_array, Amp_threeD_array)
         x_size = len(Zsnsr[:,1,1])
         y_size = len(Zsnsr[1,:,1])
         return FFM, Zsnsr, valu1, valu2, valu3, valu4, Zbin, export_filename0, Phase_threeD_array, Amp_threeD_array, \
                Zsnsr_threeD_array, Darraytotcorr, Zarraytotcorr, indZ, indD, Zlinearized, Dlinearized, \
-               Phase_reduced_array_approach, Amp_reduced_array_approach, Phase_reduced_array_retract, Amp_reduced_array_retract, \
-               Phase_reduced_array_approach_D,  Amp_reduced_array_approach_D, Phase_reduced_array_retract_D, \
+               Phase_reduced_array_approach, Amp_reduced_array_approach, Phase_reduced_array_retract, \
+               Amp_reduced_array_retract, Phase_reduced_array_approach_D,  Amp_reduced_array_approach_D, \
+               Phase_reduced_array_retract_D, \
                Amp_reduced_array_retract_D, Phase_reduced_array, Amp_reduced_array
 
     def export_HDF5(self):
@@ -277,12 +293,7 @@ class data_cleaning(tk.Frame):
             for i in range(len(target_threeD_array[1, 1, :])):
                 arraytotcorr[:, i, j] = target_threeD_array[:, i, j] - driftx[i] - drifty[j]
 
-        # NEED TO EVALUATE ASSERTS, THEY DON'T WORK ON BOTH ZSNSR AND DRIVE.
 
-        #assert (all((len(Zarraytotcorr)/2-200) <= value <= (len(Zarraytotcorr)/2+200) for value in indZ[1,:])) == True,\
-        #    "Max extension in wrong location, check input array."
-        #assert (all((len(Zarraytotcorr)/2-200) <= value <= (len(Zarraytotcorr)/2+200) for value in indZ[:,1])) == True,\
-        #    "Max extension in wrong location, check input array."
         return driftx, drifty, corrected_array, arraytotcorr, ind, CROP
 
     def bin_array(self, arraytotcorr, ind, rawarray1, rawarray2):
@@ -349,7 +360,9 @@ class data_cleaning(tk.Frame):
         return linearized, reduced_array1, reduced_array_approach1, reduced_array_retract1, reduced_array2, \
                reduced_array_approach2, reduced_array_retract2
 
-    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, valu4, Dcorrected_array, Dlinearized, export_filename0, CROP, controller2):
+    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, valu4,
+                            Dcorrected_array, Dlinearized, export_filename0, CROP, controller2):
+        """Function to export the processed data to a new h5 file."""
         global xSIZE
         global ySIZE
         global zSIZE
@@ -364,6 +377,7 @@ class data_cleaning(tk.Frame):
         METAdata_convert = list(file.attrs.values())
         METAdata = str(METAdata_convert)
 
+        # Metadata
         string1 = METAdata.find('ThermalQ')
         string2 = METAdata.find('ThermalFrequency')
 
@@ -406,6 +420,7 @@ class data_cleaning(tk.Frame):
         else:
             pass
 
+
         new_h5file_g1.create_dataset('PHASEphaseD', data = Phase_reduced_array_D, dtype='f4')
         new_h5file_g1.create_dataset('AMPampD', data = Amp_reduced_array_D, dtype='f4')
 
@@ -424,19 +439,21 @@ class data_cleaning(tk.Frame):
         return new_h5file, Xnm, Ynm
 
     def __init__(self, parent, controller):
+        """Wrapping function to link the GUI interface to the functions behind each button click."""
         global zbinsize
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
 
+        # Build buttons
         label1 = ttk.Label(self, text="Step 1: Data Pre-Processing", font=Huge_Font, background='#ffffff')
         label1.pack(pady=10, padx=10)
 
-        label3 = ttk.Label(self, text='Export Clean Dataset Name', font=Large_Font, background='#ffffff')
+        label3 = ttk.Label(self, text='Cleaned Dataset Name', font=Large_Font, background='#ffffff')
         label3.pack(pady=10, padx=10)
         export_filename = ttk.Entry(self)
         export_filename.pack()
 
-        label4 = ttk.Label(self, text="X Drift Switch", font=Large_Font, background='#ffffff')
+        label4 = ttk.Label(self, text="Correct Slope Switch", font=Large_Font, background='#ffffff')
         label4.pack(padx=5, pady=5)
         label4_1 = LabelFrame(self)
         label4_1.pack()
@@ -447,7 +464,7 @@ class data_cleaning(tk.Frame):
         listbox.insert(2, 'Off')
         listbox.bind('<<ListboxSelect>>', self.Curselect1)
 
-        label5 = ttk.Label(self, text="Deflection Saving Switch", font=Large_Font, background='#ffffff')
+        label5 = ttk.Label(self, text="Tip Deflection Switch", font=Large_Font, background='#ffffff')
         label5.pack(padx=5, pady=5)
         label5_1 = LabelFrame(self)
         label5_1.pack()
@@ -458,16 +475,17 @@ class data_cleaning(tk.Frame):
         listbox.insert(2, 'Off')
         listbox.bind('<<ListboxSelect>>', self.Curselect2)
 
-        bin = ttk.Label(self, text="Zbin Size", background='#ffffff', font=Large_Font)
+        bin = ttk.Label(self, text="Zbin Size (Suggested to be 0.02)", background='#ffffff', font=Large_Font)
         bin.pack(pady=5, padx=5)
         zbinsize = ttk.Entry(self)
         zbinsize.pack()
 
-        boom = tk.Button(self, text="Input File", bg='white', command=lambda: self.openfilename())
+        boom = tk.Button(self, text="Load File", bg='white', command=lambda: self.openfilename())
         boom.pack(padx=5,pady=5)
         boom.config(width=15)
 
-        button0 = tk.Button(self, text="Load File & Export HDF5 File",bg='white', command=lambda: (self.get_source(export_filename, controller2), self.export_HDF5()))
+        button0 = tk.Button(self, text="Process Data & Export HDF5 File",bg='white', command=lambda:
+        (self.get_source(export_filename, controller2), self.export_HDF5()))
         button0.pack(pady=5, padx=5)
 
         button2 = tk.Button(self, text="Plot Data", bg='white', command=lambda: controller.show_frame(load_data))
@@ -478,7 +496,8 @@ class data_cleaning(tk.Frame):
         button3.pack(pady=5, padx=5)
         button3.config(width=15)
 
-        button4 = tk.Button(self, text="Acknowledgements", bg='white', command=lambda: controller.show_frame(acknowledge))
+        button4 = tk.Button(self, text="Acknowledgements", bg='white',
+                            command=lambda: controller.show_frame(acknowledge))
         button4.pack(pady=5, padx=5)
 
         button5 = tk.Button(self, text="Quit", bg='white', command=lambda: controller.quit())
@@ -487,7 +506,7 @@ class data_cleaning(tk.Frame):
 
 
 class load_data(tk.Frame):
-    """The function for user to input the objectives for further visualization interests based"""
+    """The function for user to input the objectives for further visualizations"""
     def Curselect2(self, event):
         """The mouse click event for selecting the objectives you are interested to cleanup"""
         global valu
@@ -537,9 +556,12 @@ class load_data(tk.Frame):
         return linearized, x_actual, y_actual, reduced_array_retract, reduced_array_approach
 
 
-    def __init__(self, parent, controller):  # Define all the controller in the load_data window
+    def __init__(self, parent, controller):
+        """Define all the controllers in the load_data window"""
         global txtxactual
         global txtyactual
+
+        # Building th buttons and text boxes
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
         label1 = ttk.Label(self, text="Step 2: Input Dataset Information for Visualization", font=Huge_Font,
@@ -572,7 +594,8 @@ class load_data(tk.Frame):
         button0.pack(pady=5, padx=5)
         button0.config(width=15)
 
-        button1 = tk.Button(self, text="Force Curves Plot", bg='white', command=lambda: controller.show_frame(Force_Curve_plot))
+        button1 = tk.Button(self, text="Force Curves Plot", bg='white',
+                            command=lambda: controller.show_frame(Force_Curve_plot))
         button1.pack(pady=5, padx=5)
         button1.config(width=15)
 
@@ -584,7 +607,8 @@ class load_data(tk.Frame):
         button3.pack(pady=5, padx=5)
         button3.config(width=15)
 
-        button4 = tk.Button(self, text="2D Slicing Animation", bg='white', command=lambda: controller.show_frame(animation_cool))
+        button4 = tk.Button(self, text="2D Slicing Animation", bg='white',
+                            command=lambda: controller.show_frame(animation_cool))
         button4.pack(pady=5, padx=5)
 
         button5 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
@@ -593,9 +617,9 @@ class load_data(tk.Frame):
 
 
 class Force_Curve_plot(tk.Frame):
-    """The function for user to input the objectives for further visualization interests based"""
+    """The function for user to input the objectives for further visualizations"""
     def Curselect4(self, event):
-        """The mouse click event for selecting the objectives you are interested to cleanup"""
+        """The mouse click event for selecting the objectives you are interested in for cleanup"""
         global Z_directiondirection
         global Z_dirdir
         widget = event.widget
@@ -608,13 +632,13 @@ class Force_Curve_plot(tk.Frame):
         return Z_dirdir, Z_directiondirection
 
     def num_picking_point(self, numclicks):
-        """Define the location of the slice you are interested"""
+        """Define the location of the slice you are interested in"""
         global numclick
         numclick = int(numclicks.get())
         return numclick
 
     def location_slices(self, txtnslicesslices):
-        """Define the location of the slice you are interested"""
+        """Define the location of the slice you are interested in"""
         global location_slicesclices
         location_slicesclices = round(float(txtnslicesslices.get()), 2)  # Export the locations of slice from the GUI
         return location_slicesclices
@@ -622,12 +646,12 @@ class Force_Curve_plot(tk.Frame):
     def pixel_converter(self, location_slicesclices):
         """Convert from the real z to pixel"""
         global location_slices_pixel
-        location_slices_pixel = int(float(location_slicesclices / round(float(np.array(Z_dirdir).max()),4)) * len(Z_dirdir)) + 1
+        location_slices_pixel = \
+            int(float(location_slicesclices / round(float(np.array(Z_dirdir).max()),4)) * len(Z_dirdir)) + 1
         return location_slices_pixel
 
     def create_pslist(self, Z_directiondirection):
-        """The function for reshape the input data file depends on certain shape of the input data file, and also judge
-         the AFM cantilever movement direction"""
+        """The function that pulls out the approach or retract dataset."""
         global pslist
         if Z_directiondirection == "Retract":
             pslist = reduced_array_retract
@@ -636,12 +660,17 @@ class Force_Curve_plot(tk.Frame):
         return pslist
 
     def plot_force(self, location_slices_pixel, numclick, x_actual, y_actual):
+        """This function allows the user to select the which points from a data slice they would like to see  the
+        2D force curve of.  If multple points are selected, then the 2D force curves will be plotted together.  Also,
+        if multiple points are selected then an average curve is generated as a solid black line."""
         global aves_list
+
+        # Pull out required data
         phaseshift = (self.create_pslist(Z_directiondirection))[location_slices_pixel]
         cc = (self.create_pslist(Z_directiondirection))
 
+        # build figure
         fig4, ax = plt.subplots(facecolor='white')
-        #plt.imshow(phaseshift)
         x = np.linspace(init, x_actual, x_size)
         y = np.linspace(init, y_actual, y_size)
         Y, X = np.meshgrid(x, y)
@@ -650,7 +679,9 @@ class Force_Curve_plot(tk.Frame):
         clicks = []
         aves_list = [[] for i in range(numclick)]
 
+        # Build functions to identify points clicked, pull out relevant data, and plot.
         def onpick3(event):
+            """Click event function tells GUI that a mouse click MEANS SOMETHING."""
             global click
             click = 0
 
@@ -673,19 +704,22 @@ class Force_Curve_plot(tk.Frame):
                 ax = fig.add_subplot(111)
 
                 def my_func(oo, yy):
+                    """Function to plot all selected 2D force curves and find their average."""
                     plt.plot(oo, aves_list[yy], "--")
                     plt.plot(oo, aves_list_all, color='black')
                     plt.plot(oo[location_slices_pixel], aves_list_all[location_slices_pixel], 'y*')
                     plt.axvline(x=oo[location_slices_pixel], color='r', linestyle='--')
                     plt.axhline(y=aves_list_all[location_slices_pixel], color='r', linestyle='--')
-                    ax.annotate((list(zip(oo, aves_list_all))[location_slices_pixel][0], list(zip(oo, aves_list_all))[location_slices_pixel][1]),
-                                (list(zip(oo, aves_list_all))[location_slices_pixel][0], list(zip(oo, aves_list_all))[location_slices_pixel][1]),
+                    ax.annotate((list(zip(oo, aves_list_all))[location_slices_pixel][0],
+                                 list(zip(oo, aves_list_all))[location_slices_pixel][1]),
+                                (list(zip(oo, aves_list_all))[location_slices_pixel][0],
+                                 list(zip(oo, aves_list_all))[location_slices_pixel][1]),
                                 xytext=(-50, -100),textcoords='offset points')
 
                 [my_func(oo, yy) for yy in np.arange(len(clicks))]
 
-                ax.set_xlabel('The Depth of the Tip Relative to the Substrate Surface (nm)')
-                ax.set_ylabel('The Phaseshifts of Each Picked Point Among the Depth of the Tip')
+                ax.set_xlabel('Distance to Surface (nm)')
+                ax.set_ylabel('Magnitude')
                 plt.title("Forces Curves of the Picked Points", fontsize=15)
                 # z = np.polyfit(x, aves, 1)
                 # p = np.poly1d(z)
@@ -697,7 +731,8 @@ class Force_Curve_plot(tk.Frame):
         fig4.canvas.mpl_connect('pick_event', onpick3)
         plt.show()
 
-    def __init__(self, parent, controller):  # Define all the controller in the load_data window
+    def __init__(self, parent, controller):
+        """Define all the controllers in the Fore Curve window"""
         global txtnslicesslices
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
@@ -705,17 +740,17 @@ class Force_Curve_plot(tk.Frame):
                            background='#ffffff')
         label1.pack(pady=10, padx=10)
 
-        label2 = ttk.Label(self, text="Slices Location (nm)", font="Small_Font", background='#ffffff')
+        label2 = ttk.Label(self, text="Slice Location (nm)", font="Small_Font", background='#ffffff')
         label2.pack(pady=10, padx=10)
         txtnslicesslices = ttk.Entry(self)
         txtnslicesslices.pack()
 
-        label3 = ttk.Label(self, text="Number of Picking Points", font="Small_Font", background='#ffffff')
+        label3 = ttk.Label(self, text="Number of Points to Average", font="Small_Font", background='#ffffff')
         label3.pack(pady=10, padx=10)
         numclicks = ttk.Entry(self)
         numclicks.pack()
 
-        label4 = ttk.Label(self, text="Select the Z Direction", font='Large_Font', background='#ffffff')
+        label4 = ttk.Label(self, text="Select Z Direction", font='Large_Font', background='#ffffff')
         label4.pack(pady=10, padx=10)
         lab = LabelFrame(self)
         lab.pack()
@@ -726,10 +761,11 @@ class Force_Curve_plot(tk.Frame):
         listbox.insert(2, "Approach")
         listbox.bind('<<ListboxSelect>>', self.Curselect4)
 
-        button0 = tk.Button(self, text="Get the Force Curves Plot", bg='white', command=lambda: (self.location_slices(txtnslicesslices),
-                                                                                                 self.num_picking_point(numclicks),
-                                                                                                 self.pixel_converter(location_slicesclices),
-                                                                                                 self.plot_force(location_slices_pixel, numclick, x_actual, y_actual)))
+        button0 = tk.Button(self,
+                            text="Get the Force Curves Plot", bg='white', command=lambda:
+            (self.location_slices(txtnslicesslices), self.num_picking_point(numclicks),
+             self.pixel_converter(location_slicesclices), self.plot_force(location_slices_pixel,
+                                                                          numclick, x_actual, y_actual)))
         button0.pack(padx=5, pady=5)
 
         button1 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
@@ -745,7 +781,7 @@ class Force_Curve_plot(tk.Frame):
                             command=lambda: controller.show_frame(animation_cool))
         button3.pack(pady=5, padx=5)
 
-        button4 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
+        button4 = tk.Button(self, text="Organize Dataset", bg='white', command=lambda: controller.show_frame(load_data))
         button4.pack(pady=5, padx=5)
         button4.config(width=15)
 
@@ -772,10 +808,14 @@ class threeD_plot(tk.Frame):
         """3D plot function"""
         global canvas
         CROP2 = 8
-        if Z_direction == "Retract":                         # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        # If the AFM cantilever moves upward and return the z axis information and the corresponding the data points
+        # in that direction and also redefine the index and the sequence of the data points
+        if Z_direction == "Retract":
             Z_dir = np.flip(linearized, axis=0)
             data1 = reduced_array_retract[:len(reduced_array_retract)-CROP2]
-        else:                                           # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points in that direction and also redefine the index and the sequence of the data points
+        # If the AFM cantilever moves downward and return the z axis information and the corresponding the data points
+        # in that direction and also redefine the index and the sequence of the data points
+        else:
             Z_dir = linearized
             data1 = reduced_array_approach[:len(reduced_array_approach)-CROP2]
 
@@ -792,13 +832,15 @@ class threeD_plot(tk.Frame):
         X1, Y1 = np.meshgrid(z, x)
         X2, Y2 = np.meshgrid(y, z)
 
+        # Pull out just the outter most slices of the dataset.
         Z = data1[-1, :, :]
         Z1 = np.rot90(data1[:, :, 0], axes=(-2, -1))
         Z2 = data1[:, 0, :]
 
+        # Create an empty set to populate with data
         cset = [[], [], []]
 
-        # this is the example that worked for you:
+        # Populate each set with data and place the slice in the appropriate location in 3D projection graph
         cset[0] = ax.contourf(X, Y, Z, zdir='z', offset=Z_dir.max(),
                               vmin=np.min(data1), vmax=np.max(data1))
 
@@ -810,7 +852,7 @@ class threeD_plot(tk.Frame):
         cset[2] = ax.contourf(X2, Z2, Y2, zdir='y', offset=0,
                               vmin=np.min(data1), vmax=np.max(data1))
 
-        plt.colorbar(cset[0])                                           # Define the colorbar in the scatter plot
+        plt.colorbar(cset[0])                                      # Define the colorbar in the scatter plot
         ax.set_xlim(left=init, right=x_actual)                     # Define the X limit for the plot
         ax.set_ylim(top=y_actual, bottom=init)                     # Define the Y limit for the plot
         ax.set_zlim(top=np.nanmax(Z_dir), bottom=init)             # Define the Z limit for the plot
@@ -827,6 +869,7 @@ class threeD_plot(tk.Frame):
         fig.savefig("3D Plot_" + str(Z_direction)+ str(valu) + ".png")  # Save the export figure as png file
 
     def __init__(self, parent, controller):
+        """Define all the controllers in the 3D Plot window"""
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
         label1 = ttk.Label(self, text="Step 4: 3D Plot", font=Huge_Font, background='#ffffff')
@@ -843,7 +886,8 @@ class threeD_plot(tk.Frame):
         listbox.insert(2, "Approach")
         listbox.bind('<<ListboxSelect>>', self.Curselect5)
 
-        button1 = tk.Button(self, text="Get 3D Plot", bg='white', command=lambda: self.threeDplot(Z_direction, x_actual, y_actual))
+        button1 = tk.Button(self, text="Get 3D Plot", bg='white',
+                            command=lambda: self.threeDplot(Z_direction, x_actual, y_actual))
         button1.pack(pady=5, padx=5)
         button1.config(width=15)
 
@@ -851,14 +895,17 @@ class threeD_plot(tk.Frame):
         button2.pack(pady=5, padx=5)
         button2.config(width=15)
 
-        button3 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda: controller.show_frame(twoD_slicing))
+        button3 = tk.Button(self, text="2D Slicing Plot", bg='white',
+                            command=lambda: controller.show_frame(twoD_slicing))
         button3.pack(pady=5, padx=5)
         button3.config(width=15)
 
-        button4 = tk.Button(self, text="2D Slicing Animation", bg="white",command=lambda: controller.show_frame(animation_cool))
+        button4 = tk.Button(self, text="2D Slicing Animation", bg="white",
+                            command=lambda: controller.show_frame(animation_cool))
         button4.pack(pady=5, padx=5)
 
-        button5 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
+        button5 = tk.Button(self, text="Organizing Dataset", bg='white',
+                            command=lambda: controller.show_frame(load_data))
         button5.pack(pady=5, padx=5)
         button5.config(width=15)
 
@@ -868,7 +915,7 @@ class threeD_plot(tk.Frame):
 
 
 class twoD_slicing(tk.Frame):
-    """The functions for different scopes of 2D slicings"""
+    """The functions for different orientations of 2D slices"""
     global CROP3
     CROP3 = 8
     def export_filename(self, txtfilename):
@@ -930,9 +977,11 @@ class twoD_slicing(tk.Frame):
         if location_slices_pixel_x in range(x_size + 1):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for X is between 0 to " + str(x_actual) + ".")
+            tkMessageBox.askretrycancel("Input Error",
+                                        "Out of range, The expected range for X is between 0 to " + str(x_actual) + ".")
 
-        As = np.array(self.create_pslist(Z_direction))[:, location_slices_pixel_x, :]  # Select the phaseshift data points in the certain slice plane
+        # Select the phaseshift data points in the certain slice plane
+        As = np.array(self.create_pslist(Z_direction))[:, location_slices_pixel_x, :]
         As[np.isnan(As)] = np.nanmin(As)  # Replace NaN with min value of array.
 
         a = np.linspace(init, x_actual, x_size)[location_slices_pixel_x]  # Define the certain x slice in the x space
@@ -976,7 +1025,8 @@ class twoD_slicing(tk.Frame):
         fig1 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(As, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, y_actual, init, Z_dir.max()])
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, y_actual,
+                                                                                      init, Z_dir.max()])
         plt.xlabel('Y', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D X Slicing (X=' + str(round(a, 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -998,7 +1048,8 @@ class twoD_slicing(tk.Frame):
         if location_slices_pixel_y in range(y_size + 1):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Y is between 0 to " + str(y_actual) + ".")
+            tkMessageBox.askretrycancel("Input Error",
+                                        "Out of range, The expected range for Y is between 0 to " + str(y_actual) + ".")
         a = np.linspace(init, x_actual, x_size)
         b = np.linspace(init, y_actual, y_size)[location_slices_pixel_y]
         c = Z_dir
@@ -1040,7 +1091,8 @@ class twoD_slicing(tk.Frame):
         fig2 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(Bs, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, Z_dir.max()])
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual,
+                                                                                      init, Z_dir.max()])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D Y Slicing (Y=' + str(round(b, 3)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -1064,7 +1116,9 @@ class twoD_slicing(tk.Frame):
         if location_slices_pixel_z in range (len(Z_dir) + 2):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Z is between 0 to " + str(np.array(Z_dir).max()) + ".")
+            tkMessageBox.askretrycancel("Input Error",
+                                        "Out of range, The expected range for Z is between 0 to " +
+                                        str(np.array(Z_dir).max()) + ".")
 
         phaseshift = (self.create_pslist(Z_direction))[location_slices_pixel_z]
 
@@ -1076,13 +1130,18 @@ class twoD_slicing(tk.Frame):
         l[np.isnan(l)] = np.nanmin(l)  # Replace NaN with min value of array.
 
         fig3, ax1 = plt.subplots(figsize=(9, 9), facecolor='white')
-        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, y_actual])
+        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(
+            self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))),
+                         extent=[init, x_actual, init, y_actual])
 
-        mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'), formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
+        mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'),
+                                 formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
 
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
-        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
+        plt.title('2D Z Slicing (Z=' +
+                  str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data',
+                  fontsize=13)
         #  Add and label colorbar
         cbar = plt.colorbar(im2)
         cbar.set_label(str(valu))
@@ -1101,7 +1160,8 @@ class twoD_slicing(tk.Frame):
         ax.set_xlabel('X(nm)', fontsize=12)
         ax.set_ylabel('Y(nm)', fontsize=12)
         ax.set_zlabel('Z(nm)', fontsize=12)
-        ax.set_title('3D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
+        ax.set_title('3D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the '
+                     + str(valu) + ' of AFM data', fontsize=13)
 
         root2 = tk.Toplevel(self)
         root2.state('zoomed')
@@ -1156,19 +1216,25 @@ class twoD_slicing(tk.Frame):
         txtfilename.pack()
 
         button1 = tk.Button(self, text="Get 2D X Slicing Plot", bg="white",
-                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices), self.twoDX_slicings(location_slices_pixel_x, export_filename2, x_actual,y_actual)))
+                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename),
+                             self.pixel_converter(location_slices),
+                             self.twoDX_slicings(location_slices_pixel_x, export_filename2, x_actual,y_actual)))
         button1.place(x=645, y=275)
 
         button2 = tk.Button(self, text="Get 2D Y Slicing Plot", bg="white",
-                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices), self.twoDY_slicings(location_slices_pixel_y, export_filename2, x_actual,
+                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename),
+                                             self.pixel_converter(location_slices),
+                                             self.twoDY_slicings(location_slices_pixel_y, export_filename2, x_actual,
                                                                 y_actual)))
         button2.place(x=775, y=275)
 
-        button3 = tk.Button(self, text="Get 2D Z Slicing Plot", bg="white", command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        button3 = tk.Button(self, text="Get 2D Z Slicing Plot", bg="white", command=lambda:
+        (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
         self.twoDZ_slicings(location_slices_pixel_z, export_filename2, x_actual, y_actual)))
         button3.place(x=645, y=310)
 
-        button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda:
+        (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
         self.plot_force(location_slices_pixel_z, x_actual, y_actual)))
         button4.place(x=775, y=310)
 
@@ -1235,7 +1301,8 @@ class animation_cool(tk.Frame):
         zanirange = float(z_ani_range.get())
         return zanirange
 
-    def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):  # x_num_slice, y_num_slice, z_num_slice
+    # x_num_slice, y_num_slice, z_num_slice
+    def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):
         '''
         After geting all the information, the animation will be saved as .gif file.
          :param Z_dir: the z coordinate data (nm)
@@ -1255,32 +1322,38 @@ class animation_cool(tk.Frame):
         ax.set_ylabel('Y(nm)', fontsize=12)
         ax.set_zlabel('Z(nm)', fontsize=12)
         ax.set_title('ZYX Slicing Animation for the ' + str(valu) + ' of AFM data', fontsize=18)
-        # ----------------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------------
         ims = []
         for add in range(16):  # z_num_slice is the number of Z slices
             # ax.set_zlim(top=zanirange, bottom=Z_dir.min())
             a = np.linspace(init, x_actual, x_size)
-            b = np.linspace(init, y_actual,64)  # here 64 should be the y_size, if y_size works well, all 64 can be replaced by y_size
+            b = np.linspace(init, y_actual,y_size)
             c = Z_dir[
                 (int(float(zanirange / Z_dir.max()) * len(Z_dir) // 16) * add)]  # get every page of Z_dir
             x, z, y = np.meshgrid(a, c, b)
-            k = np.array(self.create_pslist(Z_direction))[(int(float(zanirange / Z_dir.max()) * len(Z_dir) // 16) * add), :, :]
-            ims.append((ax.scatter(x, y, z, c=k.flatten(), s=6) ,))  # ----------------------------------------------------- Z slice
+            k = np.array(
+                self.create_pslist(Z_direction))[(int(float(zanirange / Z_dir.max()) * len(Z_dir) // 16) * add), :, :]
+            ims.append((ax.scatter(x, y, z, c=k.flatten(), s=6) ,))  # --------------------------------------- Z slice
+
         for add in range(16):
             # ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
             a = np.linspace(init, x_actual, x_size)
             b = np.linspace(init, y_actual, 64)[int(64 // 16) * add]
             c = Z_dir[: int(float(zanirange / Z_dir.max()) * len(Z_dir))]
             x, z, y = np.meshgrid(a, c, b)
-            m = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), :, int(64 // 16) * add]
+            m = np.array(
+                self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), :, int(64 // 16) * add]
             ims.append((ax.scatter(x, y, z, c=m.flatten(), s=6),))  # ---------------------------- Y slice
+
         for add in np.arange(16):
             # ax.set_zlim(top=Z_dir.max(), bottom=Z_dir.min())
             a = np.linspace(init, x_actual, x_size)[int(x_size // 16) * add]
             b = np.linspace(init, y_actual, 64)
             c = Z_dir[: int(float(zanirange / Z_dir.max()) * len(Z_dir))]
             x, z, y = np.meshgrid(a, c, b)
-            n = np.array(self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)), int(x_size // 16) * add, init:y_size]
+            n = np.array(
+                self.create_pslist(Z_direction))[init:int(float(zanirange / Z_dir.max()) * len(Z_dir)),
+                int(x_size // 16) * add, init:y_size]
             ims.append((ax.scatter(x, y, z, c=n.flatten(), s=6),))  # ---------------------------  X slice
         im_ani = matplotlib.animation.ArtistAnimation(fig, ims, interval=12000, blit=True)
 
@@ -1322,10 +1395,12 @@ class animation_cool(tk.Frame):
         listbox.insert(2, "Approach")
         listbox.bind('<<ListboxSelect>>', self.Curselect7)
 
-        button1 = tk.Button(self, text="Get input information", bg='white', command=lambda: self.get_ani_range(z_ani_range))
+        button1 = tk.Button(self, text="Get input information", bg='white',
+                            command=lambda: self.get_ani_range(z_ani_range))
         button1.pack(pady=10, padx=10)
 
-        button2 = tk.Button(self, text="Save Animation", bg='white', command=lambda: self.save_Z_animation(Z_dir, x_actual, y_actual, x_size, y_size, zanirange))
+        button2 = tk.Button(self, text="Save Animation", bg='white', command=lambda:
+        self.save_Z_animation(Z_dir, x_actual, y_actual, x_size, y_size, zanirange))
         button2.pack(pady=10, padx=10)
         button2.config(width=15)
 
@@ -1333,11 +1408,13 @@ class animation_cool(tk.Frame):
         button3.pack(pady=10, padx=10)
         button3.config(width=15)
 
-        button4 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda: controller.show_frame(twoD_slicing))
+        button4 = tk.Button(self, text="2D Slicing Plot", bg='white',
+                            command=lambda: controller.show_frame(twoD_slicing))
         button4.pack(pady=5, padx=5)
         button4.config(width=15)
 
-        button5 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
+        button5 = tk.Button(self, text="Organizing Dataset", bg='white',
+                            command=lambda: controller.show_frame(load_data))
         button5.pack(pady=10, padx=10)
         button5.config(width=15)
 
@@ -1361,17 +1438,21 @@ class tutorial(ttk.Frame):
 
         label3 = ttk.Label(self, text='Step 1: Data Cleaning', font=Small_Font, background='#ffffff')
         label3.place(x=595, y=75)
-        label4 = ttk.Label(self, text='\t''X Dift Switch & Export Cleaned HDF5 File', font=Small_Font, background='#ffffff')
+        label4 = ttk.Label(self, text='\t''X Dift Switch & Export Cleaned HDF5 File',
+                           font=Small_Font, background='#ffffff')
         label4.place(x=595, y=120)
-        label5 = ttk.Label(self, text='Step 2: Input the Dataset Information for Visualization', font=Small_Font,background='#ffffff')
+        label5 = ttk.Label(self, text='Step 2: Input the Dataset Information for Visualization',
+                           font=Small_Font,background='#ffffff')
         label5.place(x=595, y=165)
-        label6 = ttk.Label(self, text='Step 3: Force Curves Plot for Picked Points', font=Small_Font, background='#ffffff')
+        label6 = ttk.Label(self, text='Step 3: Force Curves Plot for Picked Points',
+                           font=Small_Font, background='#ffffff')
         label6.place(x=595, y=210)
         label7 = ttk.Label(self, text='Step 4: 3D Plotting', font=Small_Font, background='#ffffff')
         label7.place(x=595, y=255)
         label8 = ttk.Label(self, text='Step 5: 2D Slicing Plotting', font=Small_Font, background='#ffffff')
         label8.place(x=595, y=300)
-        label9 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing', font=Small_Font, background='#ffffff')
+        label9 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing',
+                           font=Small_Font, background='#ffffff')
         label9.place(x=595, y=345)
         label10 = ttk.Label(self, text='Step 6: 3D Animation', font=Small_Font, background='#ffffff')
         label10.place(x=595, y=390)
