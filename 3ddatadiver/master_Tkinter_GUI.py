@@ -320,7 +320,7 @@ class data_cleaning(tk.Frame):
             arraymean[z] = np.mean(arraytotcorr[z, :, :])
 
         # Turn mean Zsensor data into a linear vector with a step size of 0.02 nm.
-        linearized = np.arange(-0.2, arraymean.max(), 0.02)
+        linearized = np.arange(-0.2, arraymean.max(), Zbin)
 
         # Generate empty array to populate
         reduced_array_approach1 = np.zeros((len(linearized), len(arraytotcorr[1, :, 1]), len(arraytotcorr[1, 1, :])))
@@ -360,9 +360,8 @@ class data_cleaning(tk.Frame):
         return linearized, reduced_array1, reduced_array_approach1, reduced_array_retract1, reduced_array2, \
                reduced_array_approach2, reduced_array_retract2
 
-    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, valu4,
-                            Dcorrected_array, Dlinearized, export_filename0, CROP, controller2):
-        """Function to export the processed data to a new h5 file."""
+    def export_cleaned_data(self, file, Ddriftx, Ddrifty, Phase_reduced_array_D, Amp_reduced_array_D, valu4, Dcorrected_array, Dlinearized, export_filename0, CROP, controller2):
+        """Export the cleaned HDF5 file with several exports. For more details information, please check in the Tutorial window in our GUI"""
         global xSIZE
         global ySIZE
         global zSIZE
@@ -377,7 +376,6 @@ class data_cleaning(tk.Frame):
         METAdata_convert = list(file.attrs.values())
         METAdata = str(METAdata_convert)
 
-        # Metadata
         string1 = METAdata.find('ThermalQ')
         string2 = METAdata.find('ThermalFrequency')
 
@@ -419,7 +417,6 @@ class data_cleaning(tk.Frame):
             new_h5file_g1.create_dataset('Deflection', data=valu4, dtype='f4')
         else:
             pass
-
 
         new_h5file_g1.create_dataset('PHASEphaseD', data = Phase_reduced_array_D, dtype='f4')
         new_h5file_g1.create_dataset('AMPampD', data = Amp_reduced_array_D, dtype='f4')
@@ -475,8 +472,10 @@ class data_cleaning(tk.Frame):
         listbox.insert(2, 'Off')
         listbox.bind('<<ListboxSelect>>', self.Curselect2)
 
-        bin = ttk.Label(self, text="Zbin Size (Suggested to be 0.02)", background='#ffffff', font=Large_Font)
-        bin.pack(pady=5, padx=5)
+        bin = ttk.Label(self, text="Zbin Size", background='#ffffff', font=Large_Font)
+        bin.pack()
+        bin_suggestion=ttk.Label(self, text="(Suggested to be 0.02)", background='#ffffff', font=Small_Font)
+        bin_suggestion.pack()
         zbinsize = ttk.Entry(self)
         zbinsize.pack()
 
@@ -617,9 +616,9 @@ class load_data(tk.Frame):
 
 
 class Force_Curve_plot(tk.Frame):
-    """The function for user to input the objectives for further visualizations"""
+    """The function for user to input the objectives for further visualization interests based"""
     def Curselect4(self, event):
-        """The mouse click event for selecting the objectives you are interested in for cleanup"""
+        """The mouse click event for selecting the objectives you are interested to cleanup"""
         global Z_directiondirection
         global Z_dirdir
         widget = event.widget
@@ -632,13 +631,13 @@ class Force_Curve_plot(tk.Frame):
         return Z_dirdir, Z_directiondirection
 
     def num_picking_point(self, numclicks):
-        """Define the location of the slice you are interested in"""
+        """Define the number of the points you are interested in certain 3D plane"""
         global numclick
         numclick = int(numclicks.get())
         return numclick
 
     def location_slices(self, txtnslicesslices):
-        """Define the location of the slice you are interested in"""
+        """Define the location of the slice you are interested"""
         global location_slicesclices
         location_slicesclices = round(float(txtnslicesslices.get()), 2)  # Export the locations of slice from the GUI
         return location_slicesclices
@@ -646,8 +645,7 @@ class Force_Curve_plot(tk.Frame):
     def pixel_converter(self, location_slicesclices):
         """Convert from the real z to pixel"""
         global location_slices_pixel
-        location_slices_pixel = \
-            int(float(location_slicesclices / round(float(np.array(Z_dirdir).max()),4)) * len(Z_dirdir)) + 1
+        location_slices_pixel = int(float(location_slicesclices / round(float(np.array(Z_dirdir).max()),4)) * len(Z_dirdir)) + 1
         return location_slices_pixel
 
     def create_pslist(self, Z_directiondirection):
@@ -660,17 +658,13 @@ class Force_Curve_plot(tk.Frame):
         return pslist
 
     def plot_force(self, location_slices_pixel, numclick, x_actual, y_actual):
-        """This function allows the user to select the which points from a data slice they would like to see  the
-        2D force curve of.  If multple points are selected, then the 2D force curves will be plotted together.  Also,
-        if multiple points are selected then an average curve is generated as a solid black line."""
+        """Plotting the Force Curves for the points where users are interested, and plotting with respect to the depth of the tip"""
         global aves_list
-
-        # Pull out required data
         phaseshift = (self.create_pslist(Z_directiondirection))[location_slices_pixel]
         cc = (self.create_pslist(Z_directiondirection))
 
-        # build figure
         fig4, ax = plt.subplots(facecolor='white')
+        #plt.imshow(phaseshift)
         x = np.linspace(init, x_actual, x_size)
         y = np.linspace(init, y_actual, y_size)
         Y, X = np.meshgrid(x, y)
@@ -679,9 +673,7 @@ class Force_Curve_plot(tk.Frame):
         clicks = []
         aves_list = [[] for i in range(numclick)]
 
-        # Build functions to identify points clicked, pull out relevant data, and plot.
         def onpick3(event):
-            """Click event function tells GUI that a mouse click MEANS SOMETHING."""
             global click
             click = 0
 
@@ -704,22 +696,19 @@ class Force_Curve_plot(tk.Frame):
                 ax = fig.add_subplot(111)
 
                 def my_func(oo, yy):
-                    """Function to plot all selected 2D force curves and find their average."""
                     plt.plot(oo, aves_list[yy], "--")
                     plt.plot(oo, aves_list_all, color='black')
                     plt.plot(oo[location_slices_pixel], aves_list_all[location_slices_pixel], 'y*')
                     plt.axvline(x=oo[location_slices_pixel], color='r', linestyle='--')
                     plt.axhline(y=aves_list_all[location_slices_pixel], color='r', linestyle='--')
-                    ax.annotate((list(zip(oo, aves_list_all))[location_slices_pixel][0],
-                                 list(zip(oo, aves_list_all))[location_slices_pixel][1]),
-                                (list(zip(oo, aves_list_all))[location_slices_pixel][0],
-                                 list(zip(oo, aves_list_all))[location_slices_pixel][1]),
+                    ax.annotate((list(zip(oo, aves_list_all))[location_slices_pixel][0], list(zip(oo, aves_list_all))[location_slices_pixel][1]),
+                                (list(zip(oo, aves_list_all))[location_slices_pixel][0], list(zip(oo, aves_list_all))[location_slices_pixel][1]),
                                 xytext=(-50, -100),textcoords='offset points')
 
                 [my_func(oo, yy) for yy in np.arange(len(clicks))]
 
-                ax.set_xlabel('Distance to Surface (nm)')
-                ax.set_ylabel('Magnitude')
+                ax.set_xlabel('The Depth of the Tip Relative to the Substrate Surface (nm)')
+                ax.set_ylabel('The Phaseshifts of Each Picked Point Among the Depth of the Tip')
                 plt.title("Forces Curves of the Picked Points", fontsize=15)
                 # z = np.polyfit(x, aves, 1)
                 # p = np.poly1d(z)
@@ -792,7 +781,6 @@ class Force_Curve_plot(tk.Frame):
 
 class threeD_plot(tk.Frame):
     """The function for the 3D plot"""
-
     def Curselect5(self, event):
         """Export the Z_direction information for the AFM cantilever motion from the GUI"""
         global Z_direction
@@ -915,7 +903,7 @@ class threeD_plot(tk.Frame):
 
 
 class twoD_slicing(tk.Frame):
-    """The functions for different orientations of 2D slices"""
+    """The functions for different scopes of 2D slicings"""
     global CROP3
     CROP3 = 8
     def export_filename(self, txtfilename):
@@ -923,6 +911,11 @@ class twoD_slicing(tk.Frame):
         global export_filename2
         export_filename2 = txtfilename.get()  # Return the name of export file
         return export_filename2
+
+    def get_bingo(self, var00):
+        global bingo
+        bingo = var00.get()
+        return bingo
 
     def Curselect6(self, event):
         global Z_direction
@@ -960,28 +953,28 @@ class twoD_slicing(tk.Frame):
         canvas2.get_tk_widget().destroy()
 
     def create_pslist(self, Z_direction):
-        """The function for reshape the input data file depends on certain shape of the input data file, and also judge
-         the AFM cantilever movement direction"""
+        """The function that pulls out the approach or retract dataset."""
         global pslist
-
         if Z_direction == "Retract":
             pslist = reduced_array_retract[: len(reduced_array_retract) - CROP3]
         else:
             pslist = reduced_array_approach[: len(reduced_array_approach) - CROP3]
         return pslist
 
-    def twoDX_slicings(self, location_slices_pixel_x, export_filename2, x_actual, y_actual):
+    def twoDX_slicings(self, location_slices_pixel_x, export_filename2, bingo, x_actual, y_actual):
         """Plotting function for the X direction slicing"""
         global canvas1
         global canvas2
+
+        root = tk.Toplevel(self)
+        root.wm_state('zoomed')
+
         if location_slices_pixel_x in range(x_size + 1):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error",
-                                        "Out of range, The expected range for X is between 0 to " + str(x_actual) + ".")
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for X is between 0 to " + str(x_actual) + ".")
 
-        # Select the phaseshift data points in the certain slice plane
-        As = np.array(self.create_pslist(Z_direction))[:, location_slices_pixel_x, :]
+        As = np.array(self.create_pslist(Z_direction))[:, location_slices_pixel_x, :]  # Select the phaseshift data points in the certain slice plane
         As[np.isnan(As)] = np.nanmin(As)  # Replace NaN with min value of array.
 
         a = np.linspace(init, x_actual, x_size)[location_slices_pixel_x]  # Define the certain x slice in the x space
@@ -1006,18 +999,9 @@ class twoD_slicing(tk.Frame):
         ax.set_zlabel('Z(nm)', fontsize=12)
         ax.set_title('3D X Slicing (X=' + str(round(a, 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
 
-        root = tk.Toplevel(self)
-        root.wm_state('zoomed')
-
         canvas1 = FigureCanvasTkAgg(fig, master=root)  # Plot the 3D figure of 2D slicing
         canvas1.draw()
         canvas1.get_tk_widget().pack(side=tk.LEFT)
-
-        h5file = export_filename2 + str(Z_direction) + str("_X.h5")  # Define the final name of the h5 file
-
-        # Assuming As is a list of lists
-        h = h5py.File(h5file, 'w')  # Create the empty h5 file
-        h.create_dataset("data", data=As)  # Insert the data into the empty file
 
         setStr = '{}_'.format(export_filename2) + str(valu) + '_Xslices.png'
         fig.savefig(setStr)
@@ -1025,8 +1009,7 @@ class twoD_slicing(tk.Frame):
         fig1 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(As, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, y_actual,
-                                                                                      init, Z_dir.max()])
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, y_actual, init, Z_dir.max()])
         plt.xlabel('Y', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D X Slicing (X=' + str(round(a, 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -1041,15 +1024,23 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_'.format(export_filename2) + str(valu) + '_2d_Xslices.png'  # Define the export image name
         fig1.savefig(setStr)
 
-    def twoDY_slicings(self, location_slices_pixel_y, export_filename2, x_actual, y_actual):
+        if bingo == 1:
+            #Get the HDF5 file for the plotting
+            h5file = export_filename2 + '_' + str(valu) + '_' + str(Z_direction) + str("_XSlicing.h5")  # Define the final name of the h5 file
+            # Assuming As is a list of lists
+            h = h5py.File(h5file, 'w')  # Create the empty h5 file
+            h.create_dataset("data", data=As)  # Insert the data into the empty file
+        else:
+            pass
+
+    def twoDY_slicings(self, location_slices_pixel_y, export_filename2, bingo, x_actual, y_actual):
         """Plotting function for the Y direction slicing"""
         global canvas1
         global canvas2
         if location_slices_pixel_y in range(y_size + 1):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error",
-                                        "Out of range, The expected range for Y is between 0 to " + str(y_actual) + ".")
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Y is between 0 to " + str(y_actual) + ".")
         a = np.linspace(init, x_actual, x_size)
         b = np.linspace(init, y_actual, y_size)[location_slices_pixel_y]
         c = Z_dir
@@ -1079,20 +1070,13 @@ class twoD_slicing(tk.Frame):
         canvas1.draw()
         canvas1.get_tk_widget().pack(side=tk.LEFT)
 
-        h5file = export_filename2 + str(Z_direction) + str("_Y.h5")
-
-        # Assuming Bs is a list of lists
-        h = h5py.File(h5file, 'w')
-        h.create_dataset("data", data=Bs)
-
         setStr = '{}_'.format(export_filename2) + str(valu) + '_Yslices.png'
         fig.savefig(setStr)
 
         fig2 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(Bs, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual,
-                                                                                      init, Z_dir.max()])
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, Z_dir.max()])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D Y Slicing (Y=' + str(round(b, 3)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -1107,7 +1091,16 @@ class twoD_slicing(tk.Frame):
         setStr = '{}_'.format(export_filename2) + str(valu) + '_2d_Yslices.png'
         fig2.savefig(setStr)
 
-    def twoDZ_slicings(self, location_slices_pixel_z, export_filename2, x_actual, y_actual):
+        if bingo == 1:
+            #Get the HDF5 file for the plotting
+            h5file = export_filename2 + '_' + str(valu) + '_' + str(Z_direction) + str("_YSlicing.h5")
+            # Assuming Bs is a list of lists
+            h = h5py.File(h5file, 'w')
+            h.create_dataset("data", data=Bs)
+        else:
+            pass
+
+    def twoDZ_slicings(self, location_slices_pixel_z, export_filename2, bingo, x_actual, y_actual):
         """3D Plotting function for Z direction slicing"""
         global canvas1
         global canvas2
@@ -1116,11 +1109,8 @@ class twoD_slicing(tk.Frame):
         if location_slices_pixel_z in range (len(Z_dir) + 2):
             pass
         else:
-            tkMessageBox.askretrycancel("Input Error",
-                                        "Out of range, The expected range for Z is between 0 to " +
-                                        str(np.array(Z_dir).max()) + ".")
+            tkMessageBox.askretrycancel("Input Error", "Out of range, The expected range for Z is between 0 to " + str(np.array(Z_dir).max()) + ".")
 
-        # Pull the relavent data out.
         phaseshift = (self.create_pslist(Z_direction))[location_slices_pixel_z]
 
         a = np.linspace(init, x_actual, x_size)
@@ -1130,34 +1120,24 @@ class twoD_slicing(tk.Frame):
         l = phaseshift
         l[np.isnan(l)] = np.nanmin(l)  # Replace NaN with min value of array.
 
-        # Generate figure and plot.
         fig3, ax1 = plt.subplots(figsize=(9, 9), facecolor='white')
-        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(
-            self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))),
-                         extent=[init, x_actual, init, y_actual])
+        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, y_actual])
 
-        # Cursor function of showing data of point cursor is hovering over.
-        mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'),
-                                 formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
+        mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'), formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
 
-        #  Add and labels and colorbar
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
-        plt.title('2D Z Slicing (Z=' +
-                  str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data',
-                  fontsize=13)
+        plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
+        #  Add and label colorbar
         cbar = plt.colorbar(im2)
         cbar.set_label(str(valu))
 
-        # Generate figure
         fig = plt.figure(figsize=(9, 9), facecolor='white')
         ax = fig.add_subplot(111, projection='3d')
-
-        # Create plot
         im1 = ax.scatter(X, Y, Z, c=l.flatten(), s=6, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
                         vmin=np.nanmin(np.array(self.create_pslist(Z_direction))))
 
-        #  Add and labels and colorbar
+        #  Add and label colorbar
         cbar = plt.colorbar(im1)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -1166,8 +1146,7 @@ class twoD_slicing(tk.Frame):
         ax.set_xlabel('X(nm)', fontsize=12)
         ax.set_ylabel('Y(nm)', fontsize=12)
         ax.set_zlabel('Z(nm)', fontsize=12)
-        ax.set_title('3D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the '
-                     + str(valu) + ' of AFM data', fontsize=13)
+        ax.set_title('3D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
 
         root2 = tk.Toplevel(self)
         root2.state('zoomed')
@@ -1175,7 +1154,7 @@ class twoD_slicing(tk.Frame):
         canvas1.draw()
         canvas1.get_tk_widget().pack(side=tk.LEFT)
 
-        h5file = export_filename2 + str(Z_direction) + str("_Z.h5")
+        h5file = export_filename2 + '_' + str(valu) + '_' + str(Z_direction) + str("_ZSlicing.h5")
 
         # Assuming phaseshift is a list of lists
         h = h5py.File(h5file, 'w')
@@ -1190,6 +1169,15 @@ class twoD_slicing(tk.Frame):
 
         setStr = '{}_'.format(export_filename2) + str(valu) + '_2d_Zslices.png'
         fig3.savefig(setStr)
+
+        if bingo == 1:
+            #Get the HDF5 file for the plotting
+            h5file = export_filename2 + str(Z_direction) + str("_Z.h5")
+            # Assuming phaseshift is a list of lists
+            h = h5py.File(h5file, 'w')
+            h.create_dataset("data", data=phaseshift)
+        else:
+            pass
 
     def __init__(self, parent, controller):
         global txtnslices
@@ -1221,26 +1209,30 @@ class twoD_slicing(tk.Frame):
         txtfilename = ttk.Entry(self)
         txtfilename.pack()
 
+        var00 = IntVar()
+        checkbutton = Checkbutton(self, text="HDF5", variable=var00, bg='white')
+        checkbutton.place(x=900, y=275)
+
         button1 = tk.Button(self, text="Get 2D X Slicing Plot", bg="white",
-                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename),
+                            command=lambda: (self.get_bingo(var00),self.location_slices(txtnslices), self.export_filename(txtfilename),
                              self.pixel_converter(location_slices),
-                             self.twoDX_slicings(location_slices_pixel_x, export_filename2, x_actual,y_actual)))
+                             self.twoDX_slicings(location_slices_pixel_x, export_filename2, bingo, x_actual,y_actual)))
         button1.place(x=645, y=275)
 
         button2 = tk.Button(self, text="Get 2D Y Slicing Plot", bg="white",
-                            command=lambda: (self.location_slices(txtnslices), self.export_filename(txtfilename),
+                            command=lambda: (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
                                              self.pixel_converter(location_slices),
-                                             self.twoDY_slicings(location_slices_pixel_y, export_filename2, x_actual,
+                                             self.twoDY_slicings(location_slices_pixel_y, export_filename2, bingo, x_actual,
                                                                 y_actual)))
         button2.place(x=775, y=275)
 
         button3 = tk.Button(self, text="Get 2D Z Slicing Plot", bg="white", command=lambda:
-        (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
-        self.twoDZ_slicings(location_slices_pixel_z, export_filename2, x_actual, y_actual)))
+        (self. get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        self.twoDZ_slicings(location_slices_pixel_z, export_filename2, bingo, x_actual, y_actual)))
         button3.place(x=645, y=310)
 
         button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda:
-        (self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
         self.plot_force(location_slices_pixel_z, x_actual, y_actual)))
         button4.place(x=775, y=310)
 
