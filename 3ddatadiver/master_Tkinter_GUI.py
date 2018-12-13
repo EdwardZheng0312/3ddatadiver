@@ -1120,6 +1120,7 @@ class twoD_slicing(tk.Frame):
                                         "Out of range, The expected range for Z is between 0 to " +
                                         str(np.array(Z_dir).max()) + ".")
 
+        # Pull the relavent data out.
         phaseshift = (self.create_pslist(Z_direction))[location_slices_pixel_z]
 
         a = np.linspace(init, x_actual, x_size)
@@ -1129,29 +1130,34 @@ class twoD_slicing(tk.Frame):
         l = phaseshift
         l[np.isnan(l)] = np.nanmin(l)  # Replace NaN with min value of array.
 
+        # Generate figure and plot.
         fig3, ax1 = plt.subplots(figsize=(9, 9), facecolor='white')
         im2 = ax1.imshow(l, vmax=np.nanmax(np.array(
             self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))),
                          extent=[init, x_actual, init, y_actual])
 
+        # Cursor function of showing data of point cursor is hovering over.
         mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'),
                                  formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
 
+        #  Add and labels and colorbar
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
         plt.title('2D Z Slicing (Z=' +
                   str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data',
                   fontsize=13)
-        #  Add and label colorbar
         cbar = plt.colorbar(im2)
         cbar.set_label(str(valu))
 
+        # Generate figure
         fig = plt.figure(figsize=(9, 9), facecolor='white')
         ax = fig.add_subplot(111, projection='3d')
+
+        # Create plot
         im1 = ax.scatter(X, Y, Z, c=l.flatten(), s=6, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
                         vmin=np.nanmin(np.array(self.create_pslist(Z_direction))))
 
-        #  Add and label colorbar
+        #  Add and labels and colorbar
         cbar = plt.colorbar(im1)
         cbar.set_label(str(valu))
         ax.set_xlim(left=init, right=x_actual)
@@ -1261,15 +1267,15 @@ class twoD_slicing(tk.Frame):
 
 
 class animation_cool(tk.Frame):
-    '''
+    """
     Users input the range of Z(1nm-4nm), and choose the direction of the data (approach or retract).
     Plot and save Z, Y and X slices animation.
-    '''
+    """
     def Curselect7(self, event):
-        '''
+        """
         According to the cantilever direction users choose, make sure the z coordinate data and range.
         :return: Z_dir, Z_direction (z axis and the cantilever direction)
-        '''
+        """
         global Z_direction
         global Z_dir
         widget = event.widget
@@ -1292,18 +1298,18 @@ class animation_cool(tk.Frame):
         return pslist
 
     def get_ani_range(self, z_ani_range):  # x&y: user should choose from 0.5-2.0nm; z: user should choose from 1.0-4.0
-        '''
+        """
         Get the value that users input the range of Z coordinate.
         :param z_ani_range: the range of Z coordinate that they want to see
         :return: zanirange
-        '''
+        """
         global zanirange
         zanirange = float(z_ani_range.get())
         return zanirange
 
     # x_num_slice, y_num_slice, z_num_slice
     def save_Z_animation(self, Z_dir, x_actual, y_actual, x_size, y_size, zanirange):
-        '''
+        """
         After geting all the information, the animation will be saved as .gif file.
          :param Z_dir: the z coordinate data (nm)
         :param x_actual: the range of x coordinate (nm)
@@ -1312,7 +1318,7 @@ class animation_cool(tk.Frame):
         :param y_size: the number of y data
         :param zanirange: the range of Z coordinate that users want to see
         :return:
-        '''
+        """
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim(left=init, right=x_actual)
@@ -1361,18 +1367,18 @@ class animation_cool(tk.Frame):
         return
 
     def clear(self):
-        '''
+        """
         clear all the users' input information
         :return:
-        '''
+        """
         z_ani_range.delete(0, END)
 
     def __init__(self, parent, controller):
-        '''
+        """
         Add and connect all the buttons and textboxs
         :param parent:
         :param controller:
-        '''
+        """
         global z_ani_range
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
