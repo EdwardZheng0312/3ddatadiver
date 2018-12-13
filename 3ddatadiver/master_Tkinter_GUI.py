@@ -1,4 +1,5 @@
 import h5py
+import itertools
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -318,7 +319,7 @@ class data_cleaning(tk.Frame):
         # Cut raw phase/amp datasets into approach and retract, then bin data according to the linearized Zsensor data.
         # Generate new arrays from the means of each bin.  Perform on both approach and retract data.
 
-        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), range(len(arraytotcorr[1, :, 1]))):
             z = arraytotcorr[:(int(ind[i, j])), i, j]  # Create dataset with just retract data
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
             # Populate new array with mean of binned Z data
@@ -329,7 +330,7 @@ class data_cleaning(tk.Frame):
                 [np.mean(rawarray2[(np.where(digitized == n)[0]).tolist(), i, j]).tolist() for n in
                  range(len(linearized))]
 
-        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), 2):
+        for i, j in itertools.product(range(len(arraytotcorr[1, 1, :])), range(len(arraytotcorr[1, :, 1]))):
             z = arraytotcorr[-(int(ind[i, j])):, i, j]  # Create dataset with just approach data.
             z = np.flipud(z)  # Flip array so surface is at the bottom on the plot.
             digitized = np.digitize(z, linearized)  # Bin Z data based on standardized linearized vector.
@@ -868,6 +869,8 @@ class threeD_plot(tk.Frame):
 
 class twoD_slicing(tk.Frame):
     """The functions for different scopes of 2D slicings"""
+    global CROP3
+    CROP3 = 8
     def export_filename(self, txtfilename):
         """Export the user input export filename into the GUI"""
         global export_filename2
@@ -881,9 +884,9 @@ class twoD_slicing(tk.Frame):
         select = widget.curselection()
         Z_direction = widget.get(select[0])
         if Z_direction == "Retract":
-            Z_dir = linearized
+            Z_dir = linearized[: len(linearized) - CROP3]
         else:
-            Z_dir = linearized
+            Z_dir = linearized[: len(linearized) - CROP3]
         return Z_dir, Z_direction
 
     def location_slices(self, txtnslices):
@@ -915,9 +918,9 @@ class twoD_slicing(tk.Frame):
         global pslist
 
         if Z_direction == "Retract":
-            pslist = reduced_array_retract
+            pslist = reduced_array_retract[: len(reduced_array_retract) - CROP3]
         else:
-            pslist = reduced_array_approach
+            pslist = reduced_array_approach[: len(reduced_array_approach) - CROP3]
         return pslist
 
     def twoDX_slicings(self, location_slices_pixel_x, export_filename2, x_actual, y_actual):
@@ -973,8 +976,7 @@ class twoD_slicing(tk.Frame):
         fig1 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
         plt.imshow(As, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))))
-        plt.axis([init, y_size - 1, init, len(Z_dir) - 1])  # Adjust the axis range for the 2D slicing
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, y_actual, init, Z_dir.max()])
         plt.xlabel('Y', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D X Slicing (X=' + str(round(a, 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -1037,9 +1039,8 @@ class twoD_slicing(tk.Frame):
 
         fig2 = plt.figure(figsize=(9, 9), facecolor='white')
         plt.subplot(111)
-        plt.imshow(Bs, aspect='auto', vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
-                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))))
-        plt.axis([init, x_size- 1, init, len(Z_dir) - 1])
+        plt.imshow(Bs, aspect='auto', origin="lower", vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),
+                   vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, Z_dir.max()])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Z', fontsize=12)
         plt.title('2D Y Slicing (Y=' + str(round(b, 3)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
@@ -1075,11 +1076,10 @@ class twoD_slicing(tk.Frame):
         l[np.isnan(l)] = np.nanmin(l)  # Replace NaN with min value of array.
 
         fig3, ax1 = plt.subplots(figsize=(9, 9), facecolor='white')
-        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))))
+        im2 = ax1.imshow(l, vmax=np.nanmax(np.array(self.create_pslist(Z_direction))),vmin=np.nanmin(np.array(self.create_pslist(Z_direction))), extent=[init, x_actual, init, y_actual])
 
         mpldatacursor.datacursor(hover=True, bbox=dict(alpha=1, fc='w'), formatter='i, j = {i}, {j}\nz = {z:.02g}'.format)
 
-        plt.axis([init, x_size - 1, init, y_size - 1])
         plt.xlabel('X', fontsize=12)
         plt.ylabel('Y', fontsize=12)
         plt.title('2D Z Slicing (Z=' + str(round(Z_dir[(location_slices_pixel_z) - 1], 4)) + 'nm) for the ' + str(valu) + ' of AFM data', fontsize=13)
