@@ -43,8 +43,8 @@ class Sea(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # Set up the iconphoto for the GUI
-        self.tk.call('wm', 'iconphoto', self._w,
-                     PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver','taiji.png')))
+        #self.tk.call('wm', 'iconphoto', self._w,
+        #             PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver','taiji.png')))
         tk.Tk.wm_title(self, "3ddatadiver")  # Set up the name of our software
         self.state('zoomed')  # Set up the initial window operation size
 
@@ -54,7 +54,7 @@ class Sea(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}  # Define the windows in the GUI
-        for F in (data_cleaning, load_data, Force_Curve_plot,
+        for F in (data_cleaning, load_data, Force_Curve_plot, select_direct_slice,
                   threeD_plot, twoD_slicing, animation_cool, tutorial, acknowledge):
             frame = F(container, self)  # Call the certain window from the bracket
 
@@ -598,6 +598,11 @@ class load_data(tk.Frame):
         button1.pack(pady=5, padx=5)
         button1.config(width=15)
 
+        button6 = tk.Button(self, text="2D Vector Slicing", bg='white',
+                            command=lambda: controller.show_frame(select_direct_slice))
+        button6.pack(pady=5, padx=5)
+        button6.config(width=15)
+
         button2 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
         button2.pack(pady=5, padx=5)
         button2.config(width=15)
@@ -609,6 +614,8 @@ class load_data(tk.Frame):
         button4 = tk.Button(self, text="2D Slicing Animation", bg='white',
                             command=lambda: controller.show_frame(animation_cool))
         button4.pack(pady=5, padx=5)
+
+
 
         button5 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button5.pack(pady=5, padx=5)
@@ -757,6 +764,11 @@ class Force_Curve_plot(tk.Frame):
                                                                           numclick, x_actual, y_actual)))
         button0.pack(padx=5, pady=5)
 
+        button6 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+                            command=lambda: controller.show_frame(select_direct_slice))
+        button6.pack(pady=5, padx=5)
+        button6.config(width=15)
+
         button1 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
         button1.pack(pady=5, padx=5)
         button1.config(width=15)
@@ -770,6 +782,7 @@ class Force_Curve_plot(tk.Frame):
                             command=lambda: controller.show_frame(animation_cool))
         button3.pack(pady=5, padx=5)
 
+
         button4 = tk.Button(self, text="Organize Dataset", bg='white', command=lambda: controller.show_frame(load_data))
         button4.pack(pady=5, padx=5)
         button4.config(width=15)
@@ -777,6 +790,216 @@ class Force_Curve_plot(tk.Frame):
         button5 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button5.pack(pady=5, padx=5)
         button5.config(width=15)
+
+class select_direct_slice(tk.Frame):
+    '''
+    users click two points, then get the slice between the points.
+    '''
+
+    def Curselect6(self, event):
+        """The mouse click event for selecting the objectives you are interested to cleanup"""
+        global Z_directiondirection
+        global Z_dirdir
+        widget = event.widget
+        select = widget.curselection()
+        Z_directiondirection = widget.get(select[0])
+        if Z_directiondirection == "Retract":
+            Z_dirdir = linearized
+        else:
+            Z_dirdir = linearized
+        return Z_dirdir, Z_directiondirection
+
+    def location_slices(self, txtnslicesslices):
+        """Define the location of the slice you are interested"""
+        global location_slicesclices
+        location_slicesclices = round(float(txtnslicesslices.get()), 2)  # Export the locations of slice from the GUI
+        return location_slicesclices
+
+    def pixel_converter(self, location_slicesclices):
+        """Convert from the real z to pixel"""
+        global location_slices_pixel
+        location_slices_pixel = int(float(location_slicesclices / round(float(np.array(Z_dirdir).max()),4)) * len(Z_dirdir)) + 1
+        return location_slices_pixel
+
+    def create_pslist(self, Z_directiondirection):
+        """The function for reshape the input data file depends on certain shape of the input data file, and also judge
+         the AFM cantilever movement direction"""
+        global pslist
+        if Z_directiondirection == "Retract":
+            pslist = reduced_array_retract
+        else:
+            pslist = reduced_array_approach
+        return pslist
+
+
+    def plot_selectdir_slice(self, location_slices_pixel, x_actual, y_actual):
+        phaseshift = (self.create_pslist(Z_directiondirection))[location_slices_pixel]
+        my_dpi = 100
+        fig4, ax = plt.subplots(facecolor='white', figsize=(500/my_dpi, 500/my_dpi),dpi=my_dpi)  #500 is the pixel size; 500/my_dpi is inches size.
+        # plt.imshow(phaseshift)
+        x = np.linspace(init, x_actual, x_size)
+        y = np.linspace(init, y_actual, y_size)
+        Y, X = np.meshgrid(x, y)
+        plt.scatter(X, Y, c=phaseshift, picker=2)
+
+        clicks = []
+        x_list = []
+        y_list = []
+        def onpick3(event):
+            global click
+            os.system('cls')
+            click = 0
+            #click += 1
+            clicks.append(click)
+            X_loc = event.x
+            Y_loc = event.y
+            x_list.append(X_loc/500*x_size)
+            y_list.append(Y_loc/500*y_size)
+            print('x_list:',x_list,'y_list:',y_list,'clicks_len:',len(clicks))
+            if len(clicks) == 2:
+                global canvas2
+                X_P1 = x_list[0]
+                Y_P1 = y_list[0]
+                X_P2 = x_list[1]
+                Y_P2 = y_list[1]
+
+                slope = (Y_P2 - Y_P1) / (X_P2 - X_P1)
+                interc = Y_P1 - slope * X_P1
+                print('slope:',slope,'interc:',interc)
+                global X_set
+                global Y_set
+                X_set = []
+                Y_set = []
+                l = []
+
+                if X_P1 > X_P2:
+                    X_max = X_P1
+                    X_min = X_P2
+                else:
+                    X_max = X_P2
+                    X_min = X_P1
+
+                if Y_P1 > Y_P2:
+                    Y_max = Y_P1
+                    Y_min = Y_P2
+                else:
+                    Y_max = Y_P2
+                    Y_min = Y_P1
+
+                if abs(slope) < 1 or abs(slope) == 1:
+                    for i in range(x_size):
+                        j = slope * i + interc
+                        if j - int(j) == 0:   #if j is an integer
+                            if j > 0 and j < y_size:
+                                X_set.append(i)
+                                Y_set.append(j)
+                                # print("j:", j)
+                                l.append((np.array(pslist)[:, i, int(j)],))
+                            else:
+                                continue
+                        else:                # if j is a float
+                            if j < 0:
+                                continue
+                            else:
+                                if j+1< y_size:
+                                    Y1 = int(j)
+                                    Y2 = int(j + 1)
+                                # print("Y1:", Y1, 'Y2:', Y2)
+                                    X_set.append(i)
+                                    Y_set.append(j)
+                                    l2 = (np.array(pslist)[:, i, Y1] + np.array(pslist)[:, i, Y2]) / 2
+                                    l.append((l2,))
+                                else:
+                                    continue
+                else:
+                    for j in range(y_size):
+                        i = (j - interc) / slope
+                        if i - int(i) == 0:
+                            if i > 0 and i < x_size:
+                                X_set.append(i)
+                                Y_set.append(j)
+                                # print("i:", i)
+                                l.append((np.array(pslist)[:, int(i), j],))
+                            else:
+                                continue
+                        else:
+                            if i < 0:
+                                continue
+                            else:
+                                if i+1<x_size:
+                                    X1 = int(i)
+                                    X2 = int(i + 1)
+                                # print("i:", i, "X1:", X1, "X2:", X2)
+                                    X_set.append(i)
+                                    Y_set.append(j)
+                                    l2 = (np.array(pslist)[:, X1, j] + np.array(pslist)[:, X2, j]) / 2
+                                    l.append((l2,))
+                                else:
+                                    continue
+
+                # Set up plotting
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+                # l=np.array(l).reshape(-1 ,500).transpose()
+                # plt.imshow(l)
+
+                a = np.linspace(X_min/500*x_actual, X_max/500*x_actual, len(X_set))
+                b = np.linspace(0, 2, len(pslist))
+                x, y = np.meshgrid(a, b)
+                # plt.imshow(l)
+                ax.scatter(x, y, c=np.array(l).reshape(-1, len(pslist)).transpose())
+                ax.set_xlabel('X(nm)', fontsize=15)
+                ax.set_ylabel('Z(nm)', fontsize=15)
+                ax.set_title('Slicing for the Selected Direction of AFM Phase Shift', fontsize=20)
+
+                root2 = tk.Toplevel(self)
+                canvas2 = FigureCanvasTkAgg(fig, master=root2)
+                canvas2.draw()
+                canvas2.get_tk_widget().pack(side=tk.LEFT)
+
+        fig4.canvas.mpl_connect('button_press_event', onpick3)
+        plt.show()
+
+    def __init__(self, parent, controller):
+
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, background='#ffffff')
+        label = ttk.Label(self, text="Step 4: 2D Selected Direction Slicing", font='Large_Font', background='#ffffff')
+        label.pack(pady=10, padx=10)
+
+        label2 = ttk.Label(self, text="Select the Z Direction", font='Large_Font', background='#ffffff')
+        label2.pack(pady=10, padx=10)
+        lab = LabelFrame(self)
+        lab.pack()
+        listbox = Listbox(lab, exportselection=0)
+        listbox.configure(height=2)
+        listbox.pack()
+        listbox.insert(1, "Up")
+        listbox.insert(2, "Down")
+        listbox.bind('<<ListboxSelect>>', self.Curselect6)
+
+        label3 = ttk.Label(self, text="Z Slices Location (nm)", font="Small_Font", background='#ffffff')
+        label3.pack(pady=10, padx=10)
+        txtnslicesslices = ttk.Entry(self)
+        txtnslicesslices.pack()
+
+        button2 = tk.Button(self, text="Show selected direction slice", bg='white', command=lambda: (self.location_slices(txtnslicesslices),
+                                                                                                     self.pixel_converter(location_slicesclices),
+                                                                                                     self.create_pslist(Z_directiondirection),
+                                                                                                     self.plot_selectdir_slice(location_slices_pixel, x_actual, y_actual)))
+        button2.pack(pady=10, padx=10)
+
+        button4 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda: controller.show_frame(twoD_slicing))
+        button4.pack(pady=5, padx=5)
+
+        button5 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
+        button5.pack(pady=10, padx=10)
+
+        button6 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
+        button6.pack(pady=10, padx=10)
+
+
+
 
 
 class threeD_plot(tk.Frame):
@@ -860,7 +1083,7 @@ class threeD_plot(tk.Frame):
         """Define all the controllers in the 3D Plot window"""
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
-        label1 = ttk.Label(self, text="Step 4: 3D Plot", font=Huge_Font, background='#ffffff')
+        label1 = ttk.Label(self, text="Step 5: 3D Plot", font=Huge_Font, background='#ffffff')
         label1.pack(pady=10, padx=10)
 
         label2 = ttk.Label(self, text="Select the Z Direction", font='Large_Font', background='#ffffff')
@@ -891,6 +1114,12 @@ class threeD_plot(tk.Frame):
         button4 = tk.Button(self, text="2D Slicing Animation", bg="white",
                             command=lambda: controller.show_frame(animation_cool))
         button4.pack(pady=5, padx=5)
+
+        button7 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+                            command=lambda: controller.show_frame(select_direct_slice))
+        button7.pack(pady=5, padx=5)
+        button7.config(width=15)
+
 
         button5 = tk.Button(self, text="Organizing Dataset", bg='white',
                             command=lambda: controller.show_frame(load_data))
@@ -1374,7 +1603,7 @@ class animation_cool(tk.Frame):
         global z_ani_range
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
-        label1 = ttk.Label(self, text="Step 6: 2D Slicing Animation", font=Huge_Font, background='#ffffff')
+        label1 = ttk.Label(self, text="Step 7: 3D Slicing Animation", font=Huge_Font, background='#ffffff')
         label1.pack(pady=10, padx=10)
 
         label2 = ttk.Label(self, text="Range of Slices: (Z,nm)", font=Large_Font, background='#ffffff')
@@ -1411,6 +1640,11 @@ class animation_cool(tk.Frame):
         button4.pack(pady=5, padx=5)
         button4.config(width=15)
 
+        button7 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+                             command=lambda: controller.show_frame(select_direct_slice))
+        button7.pack(pady=5, padx=5)
+        button7.config(width=15)
+
         button5 = tk.Button(self, text="Organizing Dataset", bg='white',
                             command=lambda: controller.show_frame(load_data))
         button5.pack(pady=10, padx=10)
@@ -1419,7 +1653,6 @@ class animation_cool(tk.Frame):
         button6 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button6.pack(pady=10, padx=10)
         button6.config(width=15)
-
 
 
 class tutorial(ttk.Frame):
@@ -1445,17 +1678,20 @@ class tutorial(ttk.Frame):
         label6 = ttk.Label(self, text='Step 3: Force Curves Plot for Picked Points',
                            font=Small_Font, background='#ffffff')
         label6.place(x=595, y=210)
-        label7 = ttk.Label(self, text='Step 4: 3D Plotting', font=Small_Font, background='#ffffff')
+        label7 = ttk.Label(self, text='Step 4: 2D Selected Direction Slice', font=Small_Font, background='#ffffff')
         label7.place(x=595, y=255)
-        label8 = ttk.Label(self, text='Step 5: 2D Slicing Plotting', font=Small_Font, background='#ffffff')
-        label8.place(x=595, y=300)
-        label9 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing',
+
+        label8 = ttk.Label(self, text='Step 5: 3D Plotting', font=Small_Font, background='#ffffff')
+        label8.place(x=595, y=255)
+        label9 = ttk.Label(self, text='Step 6: 2D Slicing Plotting', font=Small_Font, background='#ffffff')
+        label9.place(x=595, y=300)
+        label10 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing',
                            font=Small_Font, background='#ffffff')
-        label9.place(x=595, y=345)
-        label10 = ttk.Label(self, text='Step 6: 3D Animation', font=Small_Font, background='#ffffff')
-        label10.place(x=595, y=390)
-        label11 = ttk.Label(self, text="The Demo of Our Software", font=Large_Font, background='#ffffff')
-        label11.place(x=670, y=435)
+        label10.place(x=595, y=345)
+        label11 = ttk.Label(self, text='Step 7: 3D Animation', font=Small_Font, background='#ffffff')
+        label11.place(x=595, y=390)
+        label12 = ttk.Label(self, text="The Demo of Our Software", font=Large_Font, background='#ffffff')
+        label12.place(x=670, y=435)
 
         def source():
             """Export the video for this GUI"""
@@ -1467,10 +1703,10 @@ class tutorial(ttk.Frame):
 
         label12 = ttk.Label(self, text="New Export HDF5 File Layout", font=Large_Font, background='#ffffff')
         label12.place(x=660, y=515)
-        photo0 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "new_export_HDF5.png"))
-        img0 = tk.Label(self, image=photo0, background='#ffffff')
-        img0.image = photo0
-        img0.place(x=450 , y=540)
+        #photo0 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "new_export_HDF5.png"))
+        #img0 = tk.Label(self, image=photo0, background='#ffffff')
+        #img0.image = photo0
+        #img0.place(x=450 , y=540)
 
         button0 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button0.place(x=730, y=750)
@@ -1490,14 +1726,14 @@ class acknowledge(tk.Frame):
                             background='#ffffff', font='Small_Font')
         label1.pack()
 
-        photo1 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "PNNL.png"))
-        photo2 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "UWDIRECT.png"))
-        img1 = tk.Label(self, image=photo1, background='#ffffff')
-        img2 = tk.Label(self, image=photo2, background='#ffffff')
-        img1.image = photo1
-        img2.image = photo2
-        img1.pack(padx=20, pady=20)
-        img2.pack(padx=20, pady=20)
+        #photo1 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "PNNL.png"))
+        #photo2 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "UWDIRECT.png"))
+        #img1 = tk.Label(self, image=photo1, background='#ffffff')
+        #img2 = tk.Label(self, image=photo2, background='#ffffff')
+        #img1.image = photo1
+        #img2.image = photo2
+        #img1.pack(padx=20, pady=20)
+        #img2.pack(padx=20, pady=20)
 
         label2 = ttk.Label(self, text="The software is created by Ellen Murphy, Xueqiao Zhang, Renlong Zheng.",
                             font='Small_Font', background='#ffffff')
