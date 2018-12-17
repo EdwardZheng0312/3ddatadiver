@@ -483,7 +483,7 @@ class data_cleaning(tk.Frame):
         boom.pack(padx=5,pady=5)
         boom.config(width=15)
 
-        button0 = tk.Button(self, text="Process Data & Export HDF5 File",bg='white', command=lambda:
+        button0 = tk.Button(self, text="Process Data & Export .h5 File",bg='white', command=lambda:
         (self.get_source(export_filename, controller2), self.export_HDF5()))
         button0.pack(pady=5, padx=5)
 
@@ -764,7 +764,7 @@ class Force_Curve_plot(tk.Frame):
                                                                           numclick, x_actual, y_actual)))
         button0.pack(padx=5, pady=5)
 
-        button6 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+        button6 = tk.Button(self, text="2D Vector Slicing", bg='white',
                             command=lambda: controller.show_frame(select_direct_slice))
         button6.pack(pady=5, padx=5)
         button6.config(width=15)
@@ -846,6 +846,10 @@ class select_direct_slice(tk.Frame):
         x_list = []
         y_list = []
         def onpick3(event):
+            '''
+            get the two points' pixel, then transfer to real data to obtain the slice between the two points
+            :return:
+            '''
             global click
             os.system('cls')
             click = 0
@@ -936,7 +940,7 @@ class select_direct_slice(tk.Frame):
                                     l.append((l2,))
                                 else:
                                     continue
-
+                pslist[np.isnan(pslist)] = np.nanmin(pslist)  # Replace NaN with min value of array.
                 # Set up plotting
                 fig = plt.figure()
                 ax = fig.add_subplot(111)
@@ -950,12 +954,15 @@ class select_direct_slice(tk.Frame):
                 ax.scatter(x, y, c=np.array(l).reshape(-1, len(pslist)).transpose())
                 ax.set_xlabel('X(nm)', fontsize=15)
                 ax.set_ylabel('Z(nm)', fontsize=15)
-                ax.set_title('Slicing for the Selected Direction of AFM Phase Shift', fontsize=20)
+                ax.set_title('2D Vector Slicing of AFM Phase Shift', fontsize=20)
 
                 root2 = tk.Toplevel(self)
                 canvas2 = FigureCanvasTkAgg(fig, master=root2)
                 canvas2.draw()
                 canvas2.get_tk_widget().pack(side=tk.LEFT)
+
+                setStr = 'Selected direction slice.png'
+                fig.savefig(setStr)
 
         fig4.canvas.mpl_connect('button_press_event', onpick3)
         plt.show()
@@ -964,7 +971,7 @@ class select_direct_slice(tk.Frame):
 
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
-        label = ttk.Label(self, text="Step 4: 2D Selected Direction Slicing", font='Large_Font', background='#ffffff')
+        label = ttk.Label(self, text="Step 4: 2D Vector Slicing", font='Large_Font', background='#ffffff')
         label.pack(pady=10, padx=10)
 
         label2 = ttk.Label(self, text="Select the Z Direction", font='Large_Font', background='#ffffff')
@@ -983,24 +990,30 @@ class select_direct_slice(tk.Frame):
         txtnslicesslices = ttk.Entry(self)
         txtnslicesslices.pack()
 
-        button2 = tk.Button(self, text="Show selected direction slice", bg='white', command=lambda: (self.location_slices(txtnslicesslices),
+        button2 = tk.Button(self, text="2D Vector slice", bg='white', command=lambda: (self.location_slices(txtnslicesslices),
                                                                                                      self.pixel_converter(location_slicesclices),
                                                                                                      self.create_pslist(Z_directiondirection),
                                                                                                      self.plot_selectdir_slice(location_slices_pixel, x_actual, y_actual)))
         button2.pack(pady=10, padx=10)
 
-        button4 = tk.Button(self, text="2D Slicing Plot", bg='white', command=lambda: controller.show_frame(twoD_slicing))
+        button3 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
+        button3.pack(pady=5, padx=5)
+        button3.config(width=15)
+
+        button4 = tk.Button(self, text="2D Slicing Plot", bg='white',
+                            command=lambda: controller.show_frame(twoD_slicing))
         button4.pack(pady=5, padx=5)
+        button4.config(width=15)
 
-        button5 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
-        button5.pack(pady=10, padx=10)
+        button5 = tk.Button(self, text="2D Slicing Animation", bg='white',
+                            command=lambda: controller.show_frame(animation_cool))
+        button5.pack(pady=5, padx=5)
 
-        button6 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
+        button6 = tk.Button(self, text="Organizing Dataset", bg='white', command=lambda: controller.show_frame(load_data))
         button6.pack(pady=10, padx=10)
 
-
-
-
+        button7 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
+        button7.pack(pady=10, padx=10)
 
 class threeD_plot(tk.Frame):
     """The function for the 3D plot"""
@@ -1115,7 +1128,7 @@ class threeD_plot(tk.Frame):
                             command=lambda: controller.show_frame(animation_cool))
         button4.pack(pady=5, padx=5)
 
-        button7 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+        button7 = tk.Button(self, text="2D Vector Slicing", bg='white',
                             command=lambda: controller.show_frame(select_direct_slice))
         button7.pack(pady=5, padx=5)
         button7.config(width=15)
@@ -1439,52 +1452,52 @@ class twoD_slicing(tk.Frame):
         txtfilename.pack()
 
         var00 = IntVar()
-        checkbutton = Checkbutton(self, text="HDF5", variable=var00, bg='white')
-        checkbutton.place(x=900, y=275)
+        checkbutton = Checkbutton(self, text=".h5", variable=var00, bg='white')
+        checkbutton.place(x=770, y=275)
 
         button1 = tk.Button(self, text="Get 2D X Slicing Plot", bg="white",
                             command=lambda: (self.get_bingo(var00),self.location_slices(txtnslices), self.export_filename(txtfilename),
                              self.pixel_converter(location_slices),
                              self.twoDX_slicings(location_slices_pixel_x, export_filename2, bingo, x_actual,y_actual)))
-        button1.place(x=645, y=275)
+        button1.place(x=515, y=275)
 
         button2 = tk.Button(self, text="Get 2D Y Slicing Plot", bg="white",
                             command=lambda: (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
                                              self.pixel_converter(location_slices),
                                              self.twoDY_slicings(location_slices_pixel_y, export_filename2, bingo, x_actual,
                                                                 y_actual)))
-        button2.place(x=775, y=275)
+        button2.place(x=645, y=275)
 
         button3 = tk.Button(self, text="Get 2D Z Slicing Plot", bg="white", command=lambda:
         (self. get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
         self.twoDZ_slicings(location_slices_pixel_z, export_filename2, bingo, x_actual, y_actual)))
-        button3.place(x=645, y=310)
+        button3.place(x=515, y=310)
 
         button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda:
         (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
         self.plot_force(location_slices_pixel_z, x_actual, y_actual)))
-        button4.place(x=775, y=310)
+        button4.place(x=645, y=310)
 
         button6 = tk.Button(self, text="3D Plot", bg="white", command=lambda: controller.show_frame(threeD_plot))
-        button6.place(x=645, y=345)
+        button6.place(x=515, y=345)
         button6.config(width=15)
 
         button7 = tk.Button(self, text="2D Slicing Animation", bg="white",
                             command=lambda: controller.show_frame(animation_cool))
-        button7.place(x=775, y=345)
+        button7.place(x=645, y=345)
 
         button8 = tk.Button(self, text="Organizing Dataset", bg="white",
                             command=lambda: controller.show_frame(load_data))
-        button8.place(x=720, y=380)
+        button8.place(x=590, y=380)
         button8.config(width=15)
 
         button9 = tk.Button(self, text="Home", bg="white", command=lambda: controller.show_frame(data_cleaning))
-        button9.place(x=720, y=415)
+        button9.place(x=590, y=415)
         button9.config(width=15)
 
         label5 = tk.Label(self, text="The reference level for the plots is set as zero at the substrate surface.",
                           bg="white", font=(None, 10))
-        label5.place(x=595, y=450)
+        label5.place(x=465, y=450)
 
 
 class animation_cool(tk.Frame):
@@ -1606,7 +1619,7 @@ class animation_cool(tk.Frame):
         label1 = ttk.Label(self, text="Step 7: 3D Slicing Animation", font=Huge_Font, background='#ffffff')
         label1.pack(pady=10, padx=10)
 
-        label2 = ttk.Label(self, text="Range of Slices: (Z,nm)", font=Large_Font, background='#ffffff')
+        label2 = ttk.Label(self, text="Z Vector Length:(nm)", font=Large_Font, background='#ffffff')
         label2.pack(padx=5, pady=5)
         z_ani_range = ttk.Entry(self)
         z_ani_range.pack()
@@ -1622,7 +1635,7 @@ class animation_cool(tk.Frame):
         listbox.insert(2, "Approach")
         listbox.bind('<<ListboxSelect>>', self.Curselect7)
 
-        button1 = tk.Button(self, text="Get input information", bg='white',
+        button1 = tk.Button(self, text="Apply Parameters", bg='white',
                             command=lambda: self.get_ani_range(z_ani_range))
         button1.pack(pady=10, padx=10)
 
@@ -1640,7 +1653,7 @@ class animation_cool(tk.Frame):
         button4.pack(pady=5, padx=5)
         button4.config(width=15)
 
-        button7 = tk.Button(self, text="2D Selected Direction Slicing", bg='white',
+        button7 = tk.Button(self, text="2D Vector Slicing", bg='white',
                              command=lambda: controller.show_frame(select_direct_slice))
         button7.pack(pady=5, padx=5)
         button7.config(width=15)
@@ -1664,53 +1677,63 @@ class tutorial(ttk.Frame):
         label1 = ttk.Label(self, text="Tutorial", font=Huge_Font, background='#ffffff')
         label1.pack()
 
+        button1 = tk.Button(self, text="Organizing Dataset", bg='white',
+                            command=lambda: controller.show_frame(load_data))
+        button1.pack(pady=5, padx=5)
+        button1.config(width=15)
+
+        button2 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
+        button2.pack(pady=5, padx=5)
+        button2.config(width=15)
+
         label2 = ttk.Label(self, text='The Map of 3D Data Dive', font=Large_Font, background='#ffffff')
         label2.pack(padx=5, pady=5)
 
         label3 = ttk.Label(self, text='Step 1: Data Cleaning', font=Small_Font, background='#ffffff')
-        label3.place(x=595, y=75)
-        label4 = ttk.Label(self, text='\t''X Dift Switch & Export Cleaned HDF5 File',
+        label3.place(x=495, y=135)
+        label4 = ttk.Label(self, text='\t''X Dift Switch & Export Cleaned .h5 File',
                            font=Small_Font, background='#ffffff')
-        label4.place(x=595, y=120)
+        label4.place(x=495, y=180)
         label5 = ttk.Label(self, text='Step 2: Input the Dataset Information for Visualization',
                            font=Small_Font,background='#ffffff')
-        label5.place(x=595, y=165)
+        label5.place(x=495, y=225)
         label6 = ttk.Label(self, text='Step 3: Force Curves Plot for Picked Points',
                            font=Small_Font, background='#ffffff')
-        label6.place(x=595, y=210)
-        label7 = ttk.Label(self, text='Step 4: 2D Selected Direction Slice', font=Small_Font, background='#ffffff')
-        label7.place(x=595, y=255)
+        label6.place(x=495, y=270)
+        label7 = ttk.Label(self, text='Step 4: 2D Vector Slice', font=Small_Font, background='#ffffff')
+        label7.place(x=495, y=315)
 
         label8 = ttk.Label(self, text='Step 5: 3D Plotting', font=Small_Font, background='#ffffff')
-        label8.place(x=595, y=255)
+        label8.place(x=495, y=315)
         label9 = ttk.Label(self, text='Step 6: 2D Slicing Plotting', font=Small_Font, background='#ffffff')
-        label9.place(x=595, y=300)
+        label9.place(x=495, y=360)
         label10 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing',
                            font=Small_Font, background='#ffffff')
-        label10.place(x=595, y=345)
+        label10.place(x=495, y=405)
         label11 = ttk.Label(self, text='Step 7: 3D Animation', font=Small_Font, background='#ffffff')
-        label11.place(x=595, y=390)
+        label11.place(x=495, y=450)
         label12 = ttk.Label(self, text="The Demo of Our Software", font=Large_Font, background='#ffffff')
-        label12.place(x=670, y=435)
+        label12.place(x=570, y=495)
+
 
         def source():
             """Export the video for this GUI"""
             os.system("D:/New/Dropbox/UW/training/Cleanroom/EPFMNMEM2016-V004900_DTH.mp4")
 
         mov = tk.Button(self, text="Play Video", bg='white', command=source)
-        mov.place(x=730, y=475)
+        mov.place(x=630, y=525)
         mov.config(width=15)
 
-        label12 = ttk.Label(self, text="New Export HDF5 File Layout", font=Large_Font, background='#ffffff')
-        label12.place(x=660, y=515)
+        #label12 = ttk.Label(self, text="New Export .h5 File Layout", font=Large_Font, background='#ffffff')
+        #label12.place(x=610, y=515)
         #photo0 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "new_export_HDF5.png"))
         #img0 = tk.Label(self, image=photo0, background='#ffffff')
         #img0.image = photo0
         #img0.place(x=450 , y=540)
 
-        button0 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
-        button0.place(x=730, y=750)
-        button0.config(width=15)
+        #button0 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
+        #button0.place(x=680, y=750)
+        #button0.config(width=15)
 
 
 class acknowledge(tk.Frame):
