@@ -835,7 +835,8 @@ class select_direct_slice(tk.Frame):
     def plot_selectdir_slice(self, location_slices_pixel, x_actual, y_actual):
         phaseshift = (self.create_pslist(Z_directiondirection))[location_slices_pixel]
         my_dpi = 100
-        fig4, ax = plt.subplots(facecolor='white', figsize=(500/my_dpi, 500/my_dpi),dpi=my_dpi)  #500 is the pixel size; 500/my_dpi is inches size.
+        # 500 is the pixel size; 500/my_dpi is inches size.
+        fig4, ax = plt.subplots(facecolor='white', figsize=(500/my_dpi, 500/my_dpi),dpi=my_dpi)
         # plt.imshow(phaseshift)
         x = np.linspace(init, x_actual, x_size)
         y = np.linspace(init, y_actual, y_size)
@@ -954,7 +955,7 @@ class select_direct_slice(tk.Frame):
                 ax.scatter(x, y, c=np.array(l).reshape(-1, len(pslist)).transpose())
                 ax.set_xlabel('X(nm)', fontsize=15)
                 ax.set_ylabel('Z(nm)', fontsize=15)
-                ax.set_title('2D Vector Slicing of AFM Phase Shift', fontsize=20)
+                ax.set_title('2D Vector Slicing', fontsize=20)
 
                 root2 = tk.Toplevel(self)
                 canvas2 = FigureCanvasTkAgg(fig, master=root2)
@@ -990,10 +991,12 @@ class select_direct_slice(tk.Frame):
         txtnslicesslices = ttk.Entry(self)
         txtnslicesslices.pack()
 
-        button2 = tk.Button(self, text="2D Vector slice", bg='white', command=lambda: (self.location_slices(txtnslicesslices),
-                                                                                                     self.pixel_converter(location_slicesclices),
-                                                                                                     self.create_pslist(Z_directiondirection),
-                                                                                                     self.plot_selectdir_slice(location_slices_pixel, x_actual, y_actual)))
+        button2 = tk.Button(self, text="2D Vector slice",
+                            bg='white', command=lambda: (self.location_slices(txtnslicesslices),
+                                                         self.pixel_converter(location_slicesclices),
+                                                         self.create_pslist(Z_directiondirection),
+                                                         self.plot_selectdir_slice(location_slices_pixel,
+                                                                                   x_actual, y_actual)))
         button2.pack(pady=10, padx=10)
 
         button3 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
@@ -1076,7 +1079,7 @@ class threeD_plot(tk.Frame):
         cset[2] = ax.contourf(X2, Z2, Y2, zdir='y', offset=0,
                               vmin=np.min(data1), vmax=np.max(data1))
 
-        plt.colorbar(cset[0])                                      # Define the colorbar in the scatter plot
+        plt.colorbar(cset[1])                                      # Define the colorbar in the scatter plot
         ax.set_xlim(left=init, right=x_actual)                     # Define the X limit for the plot
         ax.set_ylim(top=y_actual, bottom=init)                     # Define the Y limit for the plot
         ax.set_zlim(top=np.nanmax(Z_dir), bottom=init)             # Define the Z limit for the plot
@@ -1456,7 +1459,8 @@ class twoD_slicing(tk.Frame):
         checkbutton.place(x=770, y=275)
 
         button1 = tk.Button(self, text="Get 2D X Slicing Plot", bg="white",
-                            command=lambda: (self.get_bingo(var00),self.location_slices(txtnslices), self.export_filename(txtfilename),
+                            command=lambda: (self.get_bingo(var00),self.location_slices(txtnslices),
+                                             self.export_filename(txtfilename),
                              self.pixel_converter(location_slices),
                              self.twoDX_slicings(location_slices_pixel_x, export_filename2, bingo, x_actual,y_actual)))
         button1.place(x=515, y=275)
