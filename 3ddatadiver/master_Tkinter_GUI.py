@@ -982,8 +982,8 @@ class select_direct_slice(tk.Frame):
         listbox = Listbox(lab, exportselection=0)
         listbox.configure(height=2)
         listbox.pack()
-        listbox.insert(1, "Up")
-        listbox.insert(2, "Down")
+        listbox.insert(1, "Retract")
+        listbox.insert(2, "Approach")
         listbox.bind('<<ListboxSelect>>', self.Curselect6)
 
         label3 = ttk.Label(self, text="Z Slices Location (nm)", font="Small_Font", background='#ffffff')
