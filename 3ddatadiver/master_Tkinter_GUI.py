@@ -1430,7 +1430,7 @@ class twoD_slicing(tk.Frame):
         global txtfilename
         tk.Frame.__init__(self, parent)
         tk.Frame.configure(self, background='#ffffff')
-        label1 = ttk.Label(self, text="Step 5: 2D Slicing Plot", font='Huge_Font', background='#ffffff')
+        label1 = ttk.Label(self, text="Step 6: 2D Slicing Plot", font='Huge_Font', background='#ffffff')
         label1.pack(pady=10, padx=10)
 
         label2 = ttk.Label(self, text="Slices Location (nm)", font="Small_Font", background='#ffffff')
