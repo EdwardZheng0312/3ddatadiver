@@ -1456,34 +1456,37 @@ class twoD_slicing(tk.Frame):
 
         var00 = IntVar()
         checkbutton = Checkbutton(self, text=".h5", variable=var00, bg='white')
-        checkbutton.place(x=770, y=275)
+        checkbutton.place(x=800, y=275)
 
         button1 = tk.Button(self, text="Get 2D X Slicing Plot", bg="white",
                             command=lambda: (self.get_bingo(var00),self.location_slices(txtnslices),
                                              self.export_filename(txtfilename),
                              self.pixel_converter(location_slices),
                              self.twoDX_slicings(location_slices_pixel_x, export_filename2, bingo, x_actual,y_actual)))
-        button1.place(x=515, y=275)
+        button1.place(x=500, y=275)
 
         button2 = tk.Button(self, text="Get 2D Y Slicing Plot", bg="white",
-                            command=lambda: (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
+                            command=lambda: (self.get_bingo(var00), self.location_slices(txtnslices),
+                                             self.export_filename(txtfilename),
                                              self.pixel_converter(location_slices),
                                              self.twoDY_slicings(location_slices_pixel_y, export_filename2, bingo, x_actual,
                                                                 y_actual)))
         button2.place(x=645, y=275)
 
         button3 = tk.Button(self, text="Get 2D Z Slicing Plot", bg="white", command=lambda:
-        (self. get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        (self. get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
+         self.pixel_converter(location_slices),
         self.twoDZ_slicings(location_slices_pixel_z, export_filename2, bingo, x_actual, y_actual)))
-        button3.place(x=515, y=310)
+        button3.place(x=500, y=310)
 
         button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda:
-        (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename), self.pixel_converter(location_slices),
+        (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
+         self.pixel_converter(location_slices),
         self.plot_force(location_slices_pixel_z, x_actual, y_actual)))
         button4.place(x=645, y=310)
 
         button6 = tk.Button(self, text="3D Plot", bg="white", command=lambda: controller.show_frame(threeD_plot))
-        button6.place(x=515, y=345)
+        button6.place(x=500, y=345)
         button6.config(width=15)
 
         button7 = tk.Button(self, text="2D Slicing Animation", bg="white",
