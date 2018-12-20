@@ -1711,24 +1711,24 @@ class tutorial(ttk.Frame):
         label7.place(x=495, y=315)
 
         label8 = ttk.Label(self, text='Step 5: 3D Plotting', font=Small_Font, background='#ffffff')
-        label8.place(x=495, y=315)
+        label8.place(x=495, y=360)
         label9 = ttk.Label(self, text='Step 6: 2D Slicing Plotting', font=Small_Font, background='#ffffff')
-        label9.place(x=495, y=360)
+        label9.place(x=495, y=405)
         label10 = ttk.Label(self, text='\t''X Slicing, Y Slicing, Z Slicing & Vector Slicing',
                            font=Small_Font, background='#ffffff')
-        label10.place(x=495, y=405)
+        label10.place(x=495, y=450)
         label11 = ttk.Label(self, text='Step 7: 3D Animation', font=Small_Font, background='#ffffff')
-        label11.place(x=495, y=450)
+        label11.place(x=495, y=495)
         label12 = ttk.Label(self, text="The Demo of Our Software", font=Large_Font, background='#ffffff')
-        label12.place(x=570, y=495)
+        label12.place(x=570, y=540)
 
 
         def source():
             """Export the video for this GUI"""
-            os.system("D:/New/Dropbox/UW/training/Cleanroom/EPFMNMEM2016-V004900_DTH.mp4")
+            os.system("3ddatadiver_tutorial.mov")
 
         mov = tk.Button(self, text="Play Video", bg='white', command=source)
-        mov.place(x=630, y=525)
+        mov.place(x=630, y=585)
         mov.config(width=15)
 
         #label12 = ttk.Label(self, text="New Export .h5 File Layout", font=Large_Font, background='#ffffff')
@@ -1756,14 +1756,14 @@ class acknowledge(tk.Frame):
                             background='#ffffff', font='Small_Font')
         label1.pack()
 
-        #photo1 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "PNNL.png"))
-        #photo2 = PhotoImage(file=os.path.join('D:/1UW/3ddatadiver/3ddatadiver', "UWDIRECT.png"))
-        #img1 = tk.Label(self, image=photo1, background='#ffffff')
-        #img2 = tk.Label(self, image=photo2, background='#ffffff')
-        #img1.image = photo1
-        #img2.image = photo2
-        #img1.pack(padx=20, pady=20)
-        #img2.pack(padx=20, pady=20)
+        photo1 = PhotoImage(file=os.path.join("PNNL.png"))
+        photo2 = PhotoImage(file=os.path.join("UWDIRECT.png"))
+        img1 = tk.Label(self, image=photo1, background='#ffffff')
+        img2 = tk.Label(self, image=photo2, background='#ffffff')
+        img1.image = photo1
+        img2.image = photo2
+        img1.pack(padx=20, pady=20)
+        img2.pack(padx=20, pady=20)
 
         label2 = ttk.Label(self, text="The software is created by Ellen Murphy, Xueqiao Zhang, Renlong Zheng.",
                             font='Small_Font', background='#ffffff')
