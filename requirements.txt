@@ -10,3 +10,5 @@ python-dateutil==2.7.3
 pytz==2018.4
 six==1.11.0
 wincertstore==0.2
+mpldatacursor==0.6.2
+cx_Freeze==5.1.1
