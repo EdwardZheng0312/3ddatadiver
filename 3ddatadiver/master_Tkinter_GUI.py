@@ -1007,6 +1007,7 @@ class select_direct_slice(tk.Frame):
                                                          self.plot_selectdir_slice(location_slices_pixel,
                                                                                    x_actual, y_actual)))
         button2.pack(pady=10, padx=10)
+        button2.config(width=15)
 
         button3 = tk.Button(self, text="3D Plot", bg='white', command=lambda: controller.show_frame(threeD_plot))
         button3.pack(pady=5, padx=5)
@@ -1024,9 +1025,11 @@ class select_direct_slice(tk.Frame):
         button6 = tk.Button(self, text="Organizing Dataset", bg='white',
                             command=lambda: controller.show_frame(load_data))
         button6.pack(pady=10, padx=10)
+        button6.config(width=15)
 
         button7 = tk.Button(self, text="Home", bg='white', command=lambda: controller.show_frame(data_cleaning))
         button7.pack(pady=10, padx=10)
+        button7.config(width=15)
 
 class threeD_plot(tk.Frame):
     """The function for the 3D plot"""
@@ -1500,13 +1503,7 @@ class twoD_slicing(tk.Frame):
         (self. get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
          self.pixel_converter(location_slices),
         self.twoDZ_slicings(location_slices_pixel_z, export_filename2, bingo, x_actual, y_actual)))
-        button3.place(x=500, y=310)
-
-        button4 = tk.Button(self, text="Get Vector Slicing Plot", bg="white", command=lambda:
-        (self.get_bingo(var00), self.location_slices(txtnslices), self.export_filename(txtfilename),
-         self.pixel_converter(location_slices),
-        self.plot_force(location_slices_pixel_z, x_actual, y_actual)))
-        button4.place(x=645, y=310)
+        button3.place(x=590, y=310)
 
         button6 = tk.Button(self, text="3D Plot", bg="white", command=lambda: controller.show_frame(threeD_plot))
         button6.place(x=500, y=345)
